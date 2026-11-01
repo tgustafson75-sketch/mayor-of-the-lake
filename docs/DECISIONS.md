@@ -58,3 +58,6 @@ The plan puts a budget in Phase 2. The addendum requires real-world rules resear
 
 ## D-018 Abstract zones and growth (2026-11-01)
 Zones are generic types. Growth is a monthly pull toward a target (the lower of housing capacity and jobs-supported population), with seeded noise. This is a placeholder model for testing, not a claim about how Lake Elsinore grows. All constants are TUNABLE.
+
+## D-019 Near-world SCENARIO budget and politics (2026-11-01, Tim's direction)
+Tim asked for near-world scenarios now and exact values later. src/config/scenarios/ holds the budget and council placeholders, each labelled SCENARIO. None is sourced or shown in-game as fact. The budget and politics sims run on them and are tested. Exact values come from the research step, which will replace the scenario files.

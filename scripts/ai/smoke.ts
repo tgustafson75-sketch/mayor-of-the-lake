@@ -4,14 +4,19 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createAnthropicProvider } from "../../server/ai/anthropic-provider";
+import { createGeminiProvider } from "../../server/ai/gemini-provider";
 import { parseIntent, writeDialogue, CostCounter } from "../../packages/ai-conversations/src";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const envFile = resolve(ROOT, "server/.env");
 if (!existsSync(envFile)) throw new Error("server/.env not found");
-const key = readFileSync(envFile, "utf8").split("\n").find((l) => l.startsWith("ANTHROPIC_API_KEY="))?.slice(17).trim() ?? "";
+// AI_PROVIDER=gemini (free tier) or anthropic. Default: gemini.
+const which = process.env.AI_PROVIDER ?? "gemini";
+const envName = which === "anthropic" ? "ANTHROPIC_API_KEY" : "GEMINI_API_KEY";
+const key = readFileSync(envFile, "utf8").split("\n").find((l) => l.startsWith(envName + "="))?.slice(envName.length + 1).trim() ?? "";
 
-const provider = createAnthropicProvider(key);
+const provider = which === "anthropic" ? createAnthropicProvider(key) : createGeminiProvider(key);
+console.log("provider:", provider.name);
 const cost = new CostCounter();
 
 const parsed = await parseIntent(provider, "vote_whip", "Please back the Lakefront plan this month. I'll owe you a favour.");

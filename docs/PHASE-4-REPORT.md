@@ -24,3 +24,8 @@
 
 ## Needed from Tim
 - A working Anthropic API key, put in server/.env as ANTHROPIC_API_KEY. Then run `npx tsx scripts/ai/smoke.ts`.
+
+## Update: free text provider works live (2026-11-01)
+- Gemini text provider (server/ai/gemini-provider.ts) is the free option. Models: gemini-3.5-flash-lite for intents, gemini-3.5-flash for dialogue. The 2.5 models were retired for new users.
+- Live smoke test (`npx tsx scripts/ai/smoke.ts`): the intent parsed to valid JSON. The consistency check correctly flagged a dialogue reply that agreed when the outcome was a counter. Live checking is working.
+- Claude remains the target for dialogue quality once a working Anthropic key is supplied.

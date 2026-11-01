@@ -32,12 +32,17 @@ export async function parseIntent(provider: AiProvider, type: ConversationType, 
   return { ok: false, clarify: CLARIFY, usage };
 }
 
-function safeJson(text: string): unknown {
+/** Parses model JSON. Models often wrap it in a code fence, so strip one first. */
+export function safeJson(text: string): unknown {
   try {
-    return JSON.parse(text);
+    return JSON.parse(stripFence(text));
   } catch {
     return undefined;
   }
+}
+
+export function stripFence(text: string): string {
+  return text.trim().replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
 }
 
 function formatIssues(err: z.ZodError): string {

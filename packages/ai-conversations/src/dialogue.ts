@@ -4,6 +4,7 @@
 // reject a reply that contradicts the outcome.
 import type { AiProvider, Usage } from "./provider";
 import type { Outcome } from "./resolver";
+import { stripFence } from "./intent";
 
 export interface DialogueInput {
   npcName: string;
@@ -21,7 +22,7 @@ export interface DialogueResult {
 
 export async function writeDialogue(provider: AiProvider, input: DialogueInput): Promise<DialogueResult> {
   const usage: Usage = { inputTokens: 0, outputTokens: 0 };
-  const system = `You are ${input.npcName}. ${input.voice} Reply in character, two or three sentences. You must express this outcome exactly: ${input.outcome.kind} (${input.outcome.reason}).`;
+  const system = `You are ${input.npcName}. ${input.voice} Speak in character, two or three sentences, as spoken dialogue only: no notes, no labels, no stage directions. You must express this outcome exactly: ${input.outcome.kind} (${input.outcome.reason}).`;
   const user = input.memory.length ? `What you remember:\n- ${input.memory.join("\n- ")}` : "No earlier history.";
   const res = await provider.complete({ task: "dialogue:npc", system, user });
   add(usage, res.usage);
@@ -37,7 +38,7 @@ export async function writeDialogue(provider: AiProvider, input: DialogueInput):
 
 export function parseConsistent(text: string): boolean {
   try {
-    const v = JSON.parse(text) as { consistent?: unknown };
+    const v = JSON.parse(stripFence(text)) as { consistent?: unknown };
     return v.consistent === true;
   } catch {
     return false;
