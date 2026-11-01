@@ -1,5 +1,7 @@
-// Main menu. Phase 0 only: the buttons are placeholders until the screens they
-// open are built in later phases.
+// Main menu. The buttons are placeholders until the screens they open are built
+// in later phases. #map opens the Phase 1 real-data map (dev view).
+import MapView from "./ui/MapView";
+
 const MENU_ITEMS = [
   { label: "New Life", phase: 5 },
   { label: "Continue", phase: 5 },
@@ -7,6 +9,7 @@ const MENU_ITEMS = [
 ] as const;
 
 export default function App() {
+  if (window.location.hash === "#map") return <MapView />;
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-10 bg-stone-900 p-6 text-stone-100">
       <header className="text-center">

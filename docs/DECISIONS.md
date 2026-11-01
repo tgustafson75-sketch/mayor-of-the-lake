@@ -37,3 +37,9 @@ docs/ADDENDUM-1.md adds time controls, daily/weekly/monthly/yearly loops, camera
 
 ## D-012 Visual style: close realistic 3D (Tim, 2026-11-01)
 Tim chose "close realistic 3D" over the spec's stylized low-poly. Target: real-time Three.js with PBR materials, soft shadows, lighting and post-processing, using real OSM and 3DEP geometry, matching the mood and layout of the Lakefront mockups. Exact pixel match to AI renders is not a goal. This supersedes the "stylized low-poly tilt-shift" line in the main prompt. Open: Gridiron Life's style guide says "illustrated, not photoreal." Tim has not yet said whether "both" includes Gridiron Life.
+
+## D-013 Phase 1 map pipeline (2026-11-01)
+- Raw inputs are cached in data/raw/ (gitignored). Processed output is committed to data/processed/ so the game builds without a network.
+- Geometry is projected to local metres (equirectangular at the city centre). This is accurate to a few metres across the 19 km box.
+- The DEM row order is north-first. Terrain indices are counter-clockwise from above. Terrain under water is carved down to the lake bed.
+- Display-only constants (vertical exaggeration 2x, lake-bed depth 4 m, default building height 7 m, road widths) are marked TUNABLE in code. None of them feed the sim.
