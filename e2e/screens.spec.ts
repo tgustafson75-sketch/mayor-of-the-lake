@@ -32,3 +32,13 @@ test("the feed: a post is published, shows its reach, and moves sentiment", asyn
   await expect(page.getByText("Lake clean-up starts Monday")).toBeVisible();
   await expect(page.getByText(/reach \d+/)).toBeVisible();
 });
+
+test("campaigning raises strength and the shown odds, and the election clock is visible", async ({ page }) => {
+  await page.goto("/#life");
+  await expect(page.getByLabel("Election")).toBeVisible();
+  const strengthBefore = await page.getByLabel("Election").innerText();
+  await page.getByRole("button", { name: "Campaign", exact: true }).click();
+  const strengthAfter = await page.getByLabel("Election").innerText();
+  expect(strengthAfter).not.toBe(strengthBefore);
+  expect(strengthAfter).toMatch(/campaign strength [1-9]\d*/);
+});

@@ -7,6 +7,7 @@ import { runVote, whip, type FitTable } from "../sim/council";
 import { Rng } from "../sim/rng";
 import { scenarioRoster } from "../sim/politics";
 import { createSocial, publish, type SocialState, type Tone, type Topic } from "../sim/social";
+import { addCampaignWork, createCampaign, tickCampaign, type Campaign, type ElectionResult } from "../sim/election";
 
 export const COUNCIL_IDS = scenarioRoster().map((m) => m.id);
 export const PROPOSAL = { id: "zoning-waterfront", title: "Waterfront zoning change" } as const;
@@ -34,6 +35,8 @@ export interface GameStore {
   promise: (npcId: string, text: string, dueDays: number) => void;
   social: SocialState;
   post: (text: string, tone: Tone, topic: Topic) => void;
+  campaign: Campaign;
+  lastElection: (ElectionResult & { day: number }) | null;
 }
 
 export const useGame = create<GameStore>((set, get) => ({
@@ -42,6 +45,8 @@ export const useGame = create<GameStore>((set, get) => ({
   ledger: createLedger(),
   votes: [],
   social: createSocial(),
+  campaign: createCampaign(),
+  lastElection: null,
   post: (text, tone, topic) => {
     const { life, social } = get();
     try {
@@ -52,14 +57,24 @@ export const useGame = create<GameStore>((set, get) => ({
   },
   doBlock: (b) => {
     try {
-      set({ life: spendBlock(get().life, b) });
+      set({
+        life: spendBlock(get().life, b),
+        campaign: b === "campaign" ? addCampaignWork(get().campaign) : get().campaign,
+      });
     } catch {
       // Out of blocks today: the UI disables the buttons, so this is only a guard.
     }
   },
   sleep: () => {
     const life = endDay(get().life);
-    set({ life, ledger: settleDay(get().ledger, life.day) });
+    const rng = new Rng(`election:${life.day}`);
+    const { campaign, result } = tickCampaign(get().campaign, get().social.sentiment, rng);
+    set({
+      life,
+      ledger: settleDay(get().ledger, life.day),
+      campaign,
+      lastElection: result ? { ...result, day: life.day } : get().lastElection,
+    });
   },
   callVote: () => {
     const { trust, votes } = get();

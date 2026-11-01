@@ -1,6 +1,7 @@
 // Life screen: needs, the day's four blocks, and sleep. Every change goes through the sim.
 import { BLOCKS, type Block } from "../sim/life";
 import { useGame } from "./gameStore";
+import { winChance } from "../sim/election";
 import { Screen } from "./Screen";
 
 const LABEL: Record<Block, string> = {
@@ -18,6 +19,10 @@ export function LifeScreen() {
   const doBlock = useGame((s) => s.doBlock);
   const sleep = useGame((s) => s.sleep);
   const full = life.blocksToday.length >= 4;
+  const campaign = useGame((s) => s.campaign);
+  const sentiment = useGame((s) => s.social.sentiment);
+  const lastElection = useGame((s) => s.lastElection);
+  const odds = Math.round(winChance(sentiment, campaign.strength) * 100);
 
   return (
     <Screen title="Your life" subtitle={`Day ${life.day + 1} · blocks left ${4 - life.blocksToday.length}`}>
@@ -27,6 +32,14 @@ export function LifeScreen() {
         <Meter label="Stress" value={life.needs.stress} invert />
         <Stat label="Reputation" value={`${life.reputation}`} />
       </div>
+      <section className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4" aria-label="Election">
+        <h2 className="font-display text-sm uppercase tracking-wider text-[#F4C430]">Council election</h2>
+        <p className="mt-2 text-sm">Election in {campaign.daysToElection} days · campaign strength {campaign.strength} · estimated chance to win <strong className="tabular-nums">{odds}%</strong></p>
+        {lastElection && (
+          <p className="mt-2 text-sm">Last election (day {lastElection.day + 1}): <strong className={lastElection.won ? "text-emerald-300" : "text-red-300"}>{lastElection.won ? "won" : "lost"}</strong> with {Math.round(lastElection.share * 100)}%</p>
+        )}
+      </section>
+
       <h2 className="mt-6 font-display text-lg uppercase tracking-wider text-[#F4C430]">Today's blocks</h2>
       <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
         {BLOCKS.map((b) => (
