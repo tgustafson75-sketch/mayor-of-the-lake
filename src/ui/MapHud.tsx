@@ -122,7 +122,7 @@ function NavButton({ label, phase }: { label: string; phase: number }) {
 
 function Attribution() {
   return (
-    <footer className="pointer-events-auto absolute left-1/2 top-20 max-w-[95vw] -translate-x-1/2 px-2 text-center text-[10px] leading-tight text-stone-400 sm:bottom-2 sm:top-auto sm:text-[11px]">
+    <footer className="pointer-events-auto absolute left-1/2 top-20 max-w-[92vw] -translate-x-1/2 rounded-md bg-[#14161A]/80 px-2.5 py-1 text-center text-[10px] leading-tight text-stone-300 backdrop-blur sm:bottom-2 sm:top-auto sm:text-[11px]">
       Map © OpenStreetMap contributors (ODbL) · Elevation USGS 3DEP · Population CA Dept. of Finance
     </footer>
   );
