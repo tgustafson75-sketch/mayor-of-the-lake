@@ -16,7 +16,8 @@
 - The talk panel will show "game server not running" on the deployed site, because the server is not deployed.
 - Trust resets when the server restarts (in-memory store). No save file yet.
 - Only vote whipping is resolved. Other conversation types have schemas but no resolver.
-- The 3D home, city hall, life screen, council chamber, Promises screen, advisors, social media, elections, game modes and polish (Phases 5 UI to 9) are not built.
+- Built since: the Life screen (needs, blocks, sleep) and the Council chamber (agenda, vote, whip, Promises ledger), both wired to the sim.
+- Not built: the 3D home and city hall, advisors, public comment and interest groups, social media and press, elections and campaigns, the four game modes, voice and the desktop build (Phases 5 3D, 6 advisors, 7, 8, 9).
 - Budget and politics values are SCENARIO placeholders (D-019). Real rules come from the Phase 5.5 research, which is not done.
 - Repo: https://github.com/tgustafson75-sketch/mayor-of-the-lake (public). Static site: https://mayorofthelake.vercel.app.
 - The game server is not public. Deploying it means putting the Gemini key behind an endpoint, which needs rate limits first.

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import MapView from "./ui/MapView";
 import { parseRoute } from "./ui/routes";
+import { LifeScreen } from "./ui/LifeScreen";
+import { CouncilScreen } from "./ui/CouncilScreen";
 
 /** Tracks the URL hash, so the "Open the 3D city" link switches screens without a reload. */
 function useHash(): string {
@@ -16,13 +18,15 @@ function useHash(): string {
 }
 
 const MENU_ITEMS = [
-  { label: "New Life", phase: 5 },
-  { label: "Continue", phase: 5 },
+  { label: "New Life", phase: 5, href: "#life" },
+  { label: "Council", phase: 6, href: "#council" },
   { label: "Settings", phase: 9 },
 ] as const;
 
 export default function App() {
   const route = parseRoute(useHash());
+  if (route === "life") return <LifeScreen />;
+  if (route === "council") return <CouncilScreen />;
   if (route === "map") {
     return (
       <div className="fixed inset-0">
@@ -48,17 +52,27 @@ export default function App() {
         </header>
 
         <nav aria-label="Main menu" className="flex w-64 flex-col gap-3">
-          {MENU_ITEMS.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              disabled
-              title={`Arrives in Phase ${item.phase}`}
-              className="rounded-md border border-white/10 bg-stone-950/80 px-4 py-3 text-left font-display text-lg uppercase tracking-wider text-stone-500 backdrop-blur disabled:cursor-not-allowed"
-            >
-              {item.label}
-            </button>
-          ))}
+          {MENU_ITEMS.map((item) =>
+            "href" in item ? (
+              <a
+                key={item.label}
+                href={item.href}
+                className="rounded-md border border-white/15 bg-stone-950/80 px-4 py-3 text-left font-display text-lg uppercase tracking-wider text-[#E8E6E1] backdrop-blur hover:bg-stone-900"
+              >
+                {item.label}
+              </a>
+            ) : (
+              <button
+                key={item.label}
+                type="button"
+                disabled
+                title={`Arrives in Phase ${item.phase}`}
+                className="rounded-md border border-white/10 bg-stone-950/80 px-4 py-3 text-left font-display text-lg uppercase tracking-wider text-stone-500 backdrop-blur disabled:cursor-not-allowed"
+              >
+                {item.label}
+              </button>
+            ),
+          )}
           <a
             href="#map"
             className="rounded-md border border-[#F4C430] bg-[#F4C430] px-4 py-3 text-left font-display text-lg uppercase tracking-wider text-stone-900 hover:bg-[#e0b020]"
