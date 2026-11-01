@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -n web,server \"vite\" \"tsx watch server/index.ts\"",
-    "build": "tsc --noEmit && vite build",
+    "build": "node scripts/build-api.mjs && tsc --noEmit && vite build",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "server": "tsx server/index.ts"
