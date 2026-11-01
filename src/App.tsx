@@ -5,6 +5,7 @@ import MapView from "./ui/MapView";
 import { parseRoute } from "./ui/routes";
 import { LifeScreen } from "./ui/LifeScreen";
 import { CouncilScreen } from "./ui/CouncilScreen";
+import { FeedScreen } from "./ui/FeedScreen";
 
 /** Tracks the URL hash, so the "Open the 3D city" link switches screens without a reload. */
 function useHash(): string {
@@ -20,6 +21,7 @@ function useHash(): string {
 const MENU_ITEMS = [
   { label: "New Life", phase: 5, href: "#life" },
   { label: "Council", phase: 6, href: "#council" },
+  { label: "Feed", phase: 7, href: "#feed" },
   { label: "Settings", phase: 9 },
 ] as const;
 
@@ -27,6 +29,7 @@ export default function App() {
   const route = parseRoute(useHash());
   if (route === "life") return <LifeScreen />;
   if (route === "council") return <CouncilScreen />;
+  if (route === "feed") return <FeedScreen />;
   if (route === "map") {
     return (
       <div className="fixed inset-0">

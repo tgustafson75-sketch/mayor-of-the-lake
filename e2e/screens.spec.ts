@@ -22,3 +22,13 @@ test("menu opens the Council chamber: vote, whip and a promise are recorded", as
   await page.getByRole("button", { name: /Promise a marina plan/ }).click();
   await expect(page.getByText("Bring the marina plan to the council by spring")).toBeVisible();
 });
+
+test("the feed: a post is published, shows its reach, and moves sentiment", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Feed" }).click();
+  await expect(page.getByText("Sentiment by group")).toBeVisible();
+  await page.getByLabel("Your post").fill("Lake clean-up starts Monday");
+  await page.getByRole("button", { name: "Publish" }).click();
+  await expect(page.getByText("Lake clean-up starts Monday")).toBeVisible();
+  await expect(page.getByText(/reach \d+/)).toBeVisible();
+});

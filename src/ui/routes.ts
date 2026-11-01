@@ -1,8 +1,8 @@
 // Screens and how they map to the URL. Hash routing keeps the static site working
 // with no server rewrites, and it survives refresh and deep links.
-export type Route = "menu" | "map" | "life" | "council";
+export type Route = "menu" | "map" | "life" | "council" | "feed";
 
-const ROUTES: Record<string, Route> = { "#map": "map", "#life": "life", "#council": "council" };
+const ROUTES: Record<string, Route> = { "#map": "map", "#life": "life", "#council": "council", "#feed": "feed" };
 
 export function parseRoute(hash: string): Route {
   return ROUTES[hash] ?? "menu";

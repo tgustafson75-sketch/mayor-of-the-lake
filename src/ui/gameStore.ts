@@ -6,6 +6,7 @@ import { addCommitment, createLedger, settleDay, type Ledger } from "../sim/comm
 import { runVote, whip, type FitTable } from "../sim/council";
 import { Rng } from "../sim/rng";
 import { scenarioRoster } from "../sim/politics";
+import { createSocial, publish, type SocialState, type Tone, type Topic } from "../sim/social";
 
 export const COUNCIL_IDS = scenarioRoster().map((m) => m.id);
 export const PROPOSAL = { id: "zoning-waterfront", title: "Waterfront zoning change" } as const;
@@ -31,6 +32,8 @@ export interface GameStore {
   callVote: () => void;
   whipMember: (id: string) => void;
   promise: (npcId: string, text: string, dueDays: number) => void;
+  social: SocialState;
+  post: (text: string, tone: Tone, topic: Topic) => void;
 }
 
 export const useGame = create<GameStore>((set, get) => ({
@@ -38,6 +41,15 @@ export const useGame = create<GameStore>((set, get) => ({
   trust: Object.fromEntries(COUNCIL_IDS.map((id) => [id, 0])),
   ledger: createLedger(),
   votes: [],
+  social: createSocial(),
+  post: (text, tone, topic) => {
+    const { life, social } = get();
+    try {
+      set({ social: publish(social, { day: life.day, text, tone, topic, reputation: life.reputation }) });
+    } catch {
+      // Empty text: the composer disables Publish, so this is only a guard.
+    }
+  },
   doBlock: (b) => {
     try {
       set({ life: spendBlock(get().life, b) });
