@@ -49,3 +49,12 @@ Charcoal (#14161A family) with gold accent (#F4C430), taken from the Gridiron Li
 
 ## D-015 Deployment (2026-11-01)
 Static Vite build deployed to Vercel project `mayorofthelake`: https://mayorofthelake.vercel.app. The server/ proxy is not deployed yet (no AI until Phase 4). Re-deploy with `vercel deploy --prod --yes --name mayorofthelake`.
+
+## D-016 Phase 2 budget deferred (2026-11-01)
+The plan puts a budget in Phase 2. The addendum requires real-world rules research before any money or politics system. The addendum wins. Phase 2 builds time controls, loops, zoning and growth. The budget waits for the Phase 5.5 research.
+
+## D-017 Simplified calendar (2026-11-01)
+12 months of 30 days, 360 days a year. Chosen so the loops are simple and testable. A real-calendar mode is a later decision, and the addendum's "real election cycle" will need it.
+
+## D-018 Abstract zones and growth (2026-11-01)
+Zones are generic types. Growth is a monthly pull toward a target (the lower of housing capacity and jobs-supported population), with seeded noise. This is a placeholder model for testing, not a claim about how Lake Elsinore grows. All constants are TUNABLE.
