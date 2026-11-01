@@ -31,3 +31,6 @@ Zustand, Comlink, Dexie, Zod, three/R3F are installed because the decided stack 
 
 ## D-010 Smoke test uses Playwright's Chromium headless shell (Phase 0)
 Installed with `npx playwright install chromium`. No other browser is configured.
+
+## D-011 Addendum 1 accepted into the plan (2026-11)
+docs/ADDENDUM-1.md adds time controls, daily/weekly/monthly/yearly loops, camera presets, four game modes, a real-world research phase (5.5) with a STOP, and a commitments ledger. Addendum wins over the main prompt on conflicts. Phase 1 has not started: Phase 0 review is still pending.
