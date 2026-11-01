@@ -151,7 +151,8 @@ export function buildTerrain(map: MapData): THREE.BufferGeometry {
     // ny is 1 on flat ground and falls toward 0 on steep faces.
     const steep = clamp((0.9 - normal.getY(i)) / 0.5, 0, 1);
     tmp.lerp(ROCK_TINT, steep);
-    colors.set([tmp.r, tmp.g, tmp.b], i * 3);
+    // Clamped on write: a colour channel must be in 0..1 whatever the float arithmetic does.
+    colors.set([clamp(tmp.r, 0, 1), clamp(tmp.g, 0, 1), clamp(tmp.b, 0, 1)], i * 3);
     const x = positions[i * 3];
     const z = positions[i * 3 + 2];
     uvs.set([x / GROUND_TILE_M, z / GROUND_TILE_M], i * 2);

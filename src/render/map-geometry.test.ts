@@ -142,10 +142,8 @@ describe("terrain UVs", () => {
 describe("terrain colour", () => {
   it("gives every vertex an RGB colour in [0, 1]", () => {
     const col = buildTerrain(map).getAttribute("color");
-    for (let i = 0; i < col.array.length; i++) {
-      expect(col.array[i]).toBeGreaterThanOrEqual(0);
-      expect(col.array[i]).toBeLessThanOrEqual(1);
-    }
+    const bad = Array.from(col.array).filter((v) => !(v >= 0 && v <= 1));
+    expect(bad, `out-of-range colour values: ${bad.slice(0, 5).join(", ")}`).toEqual([]);
   });
 });
 
