@@ -29,7 +29,7 @@ export const DEMOGRAPHICS = {
   pct65AndOver: 9.3,
   // Race and ethnicity, 2020 census base. QuickFacts.
   pctHispanicOrLatino: 52.8,
-  pctWhiteAloneNotHispanic: 43.0, // TUNABLE — QuickFacts "White alone" figure, not the non-Hispanic cut; verify
+  pctWhiteAlone: 43.0, // QuickFacts "White alone" (does not exclude Hispanic respondents)
   // Median household income, 2019–2023 ACS 5-year, 2023 dollars. QuickFacts.
   medianHouseholdIncome2023Dollars: 96_527,
 } as const;
