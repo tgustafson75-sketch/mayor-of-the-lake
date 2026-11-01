@@ -955,13 +955,13 @@ var compose = (middleware, onError, onNotFound) => {
       index = i;
       let res;
       let isError = false;
-      let handler;
+      let handler2;
       if (middleware[i]) {
-        handler = middleware[i][0][0];
+        handler2 = middleware[i][0][0];
         context.req.routeIndex = i;
-      } else handler = i === middleware.length && next || void 0;
-      if (handler) try {
-        res = await handler(context, () => dispatch(i + 1));
+      } else handler2 = i === middleware.length && next || void 0;
+      if (handler2) try {
+        res = await handler2(context, () => dispatch(i + 1));
       } catch (err) {
         if (err instanceof Error && onError) {
           context.error = err;
@@ -1058,8 +1058,8 @@ var Hono = class Hono2 {
         const methodName = method.toUpperCase();
         if (typeof args1 === "string") this.#path = args1;
         else this.#addRoute(methodName, this.#path, args1);
-        args.forEach((handler) => {
-          this.#addRoute(methodName, this.#path, handler);
+        args.forEach((handler2) => {
+          this.#addRoute(methodName, this.#path, handler2);
         });
         return this;
       };
@@ -1069,7 +1069,7 @@ var Hono = class Hono2 {
         this.#path = p;
         for (const m of [method].flat()) {
           const methodName = m.toUpperCase();
-          for (const handler of handlers) this.#addRoute(methodName, this.#path, handler);
+          for (const handler2 of handlers) this.#addRoute(methodName, this.#path, handler2);
         }
       }
       return this;
@@ -1080,8 +1080,8 @@ var Hono = class Hono2 {
         this.#path = "*";
         handlers.unshift(arg1);
       }
-      handlers.forEach((handler) => {
-        this.#addRoute("ALL", this.#path, handler);
+      handlers.forEach((handler2) => {
+        this.#addRoute("ALL", this.#path, handler2);
       });
       return this;
     };
@@ -1122,13 +1122,13 @@ var Hono = class Hono2 {
   route(path, app2) {
     const subApp = this.basePath(path);
     app2.routes.map((r) => {
-      let handler;
-      if (app2.errorHandler === errorHandler) handler = r.handler;
+      let handler2;
+      if (app2.errorHandler === errorHandler) handler2 = r.handler;
       else {
-        handler = async (c, next) => (await compose([], app2.errorHandler)(c, () => r.handler(c, next))).res;
-        handler[COMPOSED_HANDLER] = r.handler;
+        handler2 = async (c, next) => (await compose([], app2.errorHandler)(c, () => r.handler(c, next))).res;
+        handler2[COMPOSED_HANDLER] = r.handler;
       }
-      subApp.#addRoute(r.method, r.path, handler, r.basePath);
+      subApp.#addRoute(r.method, r.path, handler2, r.basePath);
     });
     return this;
   }
@@ -1166,8 +1166,8 @@ var Hono = class Hono2 {
   * })
   * ```
   */
-  onError = (handler) => {
-    this.errorHandler = handler;
+  onError = (handler2) => {
+    this.errorHandler = handler2;
     return this;
   };
   /**
@@ -1185,8 +1185,8 @@ var Hono = class Hono2 {
   * })
   * ```
   */
-  notFound = (handler) => {
-    this.#notFoundHandler = handler;
+  notFound = (handler2) => {
+    this.#notFoundHandler = handler2;
     return this;
   };
   /**
@@ -1247,23 +1247,23 @@ var Hono = class Hono2 {
     };
     const mergedPath = mergePath(this._basePath, path);
     const defaultReplaceRequest = (c) => createMountedRequest(c, mergedPath.replace(/\/$/, ""), mergePath(mergedPath, "*"));
-    const handler = async (c, next) => {
+    const handler2 = async (c, next) => {
       const res = await applicationHandler(replaceRequest ? replaceRequest(c.req.raw) : defaultReplaceRequest(c), ...getOptions(c));
       if (res) return res;
       await next();
     };
-    this.#addRoute("ALL", mergePath(path, "*"), handler);
+    this.#addRoute("ALL", mergePath(path, "*"), handler2);
     return this;
   }
-  #addRoute(method, path, handler, baseRoutePath) {
+  #addRoute(method, path, handler2, baseRoutePath) {
     path = mergePath(this._basePath, path);
     const r = {
       basePath: baseRoutePath !== void 0 ? mergePath(this._basePath, baseRoutePath) : this._basePath,
       path,
       method,
-      handler
+      handler: handler2
     };
-    this.router.add(method, path, [handler, r]);
+    this.router.add(method, path, [handler2, r]);
     this.routes.push(r);
   }
   #handleError(err, c) {
@@ -1562,7 +1562,7 @@ var RegExpRouter = class {
       throw e === PATH_ERROR ? new UnsupportedPathError(path) : e;
     }
   }
-  add(method, path, handler) {
+  add(method, path, handler2) {
     const handlers = this.#handlers;
     if (!handlers) throw new Error(MESSAGE_MATCHER_IS_ALREADY_BUILT);
     const tries = this.#tries;
@@ -1576,7 +1576,7 @@ var RegExpRouter = class {
     const paths = checkOptionalParameter(path) || [path];
     for (const path2 of paths) for (const m of methods) {
       if (!tries[m].paths[path2]) this.#insertPath(m, path2);
-      handlers[m].push([handler, path2]);
+      handlers[m].push([handler2, path2]);
     }
   }
   match = match;
@@ -1627,12 +1627,12 @@ var SmartRouter = class {
   constructor(init) {
     this.#routers = init.routers;
   }
-  add(method, path, handler) {
+  add(method, path, handler2) {
     if (!this.#routes) throw new Error(MESSAGE_MATCHER_IS_ALREADY_BUILT);
     this.#routes.push([
       method,
       path,
-      handler
+      handler2
     ]);
   }
   match(method, path) {
@@ -1675,7 +1675,7 @@ var Node3 = class Node4 {
   #patterns = [];
   #pattern;
   #params = emptyParams;
-  insert(method, path, handler) {
+  insert(method, path, handler2) {
     let curNode = this;
     const parts = splitRoutingPath(path);
     const possibleKeys = /* @__PURE__ */ new Set();
@@ -1694,7 +1694,7 @@ var Node3 = class Node4 {
       if (isParam) possibleKeys.add(pattern[1]);
     }
     curNode.#methods.push({ [method]: {
-      handler,
+      handler: handler2,
       possibleKeys: [...possibleKeys],
       score: ++order
     } });
@@ -1792,7 +1792,7 @@ var Node3 = class Node4 {
     if (handlerSets[1]) handlerSets.sort((a, b) => {
       return a.score - b.score;
     });
-    return [handlerSets.map(({ handler, params }) => [handler, params])];
+    return [handlerSets.map(({ handler: handler2, params }) => [handler2, params])];
   }
 };
 
@@ -1800,8 +1800,8 @@ var Node3 = class Node4 {
 var TrieRouter = class {
   name = "TrieRouter";
   #node = new Node3();
-  add(method, path, handler) {
-    for (const result of checkOptionalParameter(path) || [path]) this.#node.insert(method, result, handler);
+  add(method, path, handler2) {
+    for (const result of checkOptionalParameter(path) || [path]) this.#node.insert(method, result, handler2);
   }
   match(method, path) {
     return this.#node.search(method, path);
@@ -3010,7 +3010,7 @@ function attachSchema(issues, start, inst) {
     (_a3 = issues[i]).schema ?? (_a3.schema = inst);
   }
 }
-function finalizeIssue(iss, ctx, config3) {
+function finalizeIssue(iss, ctx, config2) {
   var _a3;
   const traits = iss.inst?._zod?.traits;
   if (traits?.has("$ZodType")) {
@@ -3020,7 +3020,7 @@ function finalizeIssue(iss, ctx, config3) {
       iss.schema = iss.inst;
   }
   const schemaError = iss.schema !== iss.inst ? iss.schema?._zod.def?.error : void 0;
-  const message = iss.message ? iss.message : unwrapMessage(iss.inst?._zod.def?.error?.(iss)) ?? unwrapMessage(schemaError?.(iss)) ?? unwrapMessage(ctx?.error?.(iss)) ?? unwrapMessage(config3.customError?.(iss)) ?? unwrapMessage(config3.localeError?.(iss)) ?? "Invalid input";
+  const message = iss.message ? iss.message : unwrapMessage(iss.inst?._zod.def?.error?.(iss)) ?? unwrapMessage(schemaError?.(iss)) ?? unwrapMessage(ctx?.error?.(iss)) ?? unwrapMessage(config2.customError?.(iss)) ?? unwrapMessage(config2.localeError?.(iss)) ?? "Invalid input";
   const full = {};
   for (const k of Object.keys(iss)) {
     if (k === "inst" || k === "schema" || k === "continue" || k === "input" || k === "__proto__")
@@ -21853,9 +21853,18 @@ var app = createApp({
   store: createSessionStore(),
   limiter: createLimiter()
 });
-var config2 = { runtime: "nodejs" };
-var vercel_entry_default = handle(app);
+var handler = handle(app);
+var GET = handler;
+var POST = handler;
+var PUT = handler;
+var PATCH = handler;
+var DELETE = handler;
+var OPTIONS = handler;
 export {
-  config2 as config,
-  vercel_entry_default as default
+  DELETE,
+  GET,
+  OPTIONS,
+  PATCH,
+  POST,
+  PUT
 };

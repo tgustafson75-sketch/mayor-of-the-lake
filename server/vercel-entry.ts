@@ -14,5 +14,11 @@ const app = createApp({
   limiter: createLimiter(),
 });
 
-export const config = { runtime: "nodejs" };
-export default handle(app);
+// Vercel's Node runtime routes by named HTTP method exports, not a default export.
+const handler = handle(app);
+export const GET = handler;
+export const POST = handler;
+export const PUT = handler;
+export const PATCH = handler;
+export const DELETE = handler;
+export const OPTIONS = handler;
