@@ -38,3 +38,10 @@ describe("game modes", () => {
     }
   });
 });
+
+describe("mode wiring", () => {
+  it("only the modes where the player runs politics offer campaign blocks", () => {
+    const withPolitics = MODE_ORDER.filter((id) => MODES[id].playerPolitics);
+    expect(withPolitics).toEqual(["life", "politics"]);
+  });
+});

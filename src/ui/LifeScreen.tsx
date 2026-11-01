@@ -22,6 +22,7 @@ export function LifeScreen() {
   const doBlock = useGame((s) => s.doBlock);
   const sleep = useGame((s) => s.sleep);
   const full = life.blocksToday.length >= 4;
+  const politics = MODES[mode].playerPolitics;
   const campaign = useGame((s) => s.campaign);
   const sentiment = useGame((s) => s.social.sentiment);
   const lastElection = useGame((s) => s.lastElection);
@@ -35,6 +36,7 @@ export function LifeScreen() {
         <Meter label="Stress" value={life.needs.stress} invert />
         <Stat label="Reputation" value={`${life.reputation}`} />
       </div>
+      {politics && (
       <section className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4" aria-label="Election">
         <h2 className="font-display text-sm uppercase tracking-wider text-[#F4C430]">Council election</h2>
         <p className="mt-2 text-sm">Election in {campaign.daysToElection} days · campaign strength {campaign.strength} · estimated chance to win <strong className="tabular-nums">{odds}%</strong></p>
@@ -42,10 +44,11 @@ export function LifeScreen() {
           <p className="mt-2 text-sm">Last election (day {lastElection.day + 1}): <strong className={lastElection.won ? "text-emerald-300" : "text-red-300"}>{lastElection.won ? "won" : "lost"}</strong> with {Math.round(lastElection.share * 100)}%</p>
         )}
       </section>
+      )}
 
       <h2 className="mt-6 font-display text-lg uppercase tracking-wider text-[#F4C430]">Today's blocks</h2>
       <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
-        {BLOCKS.map((b) => (
+        {BLOCKS.filter((b) => politics || b !== "campaign").map((b) => (
           <button key={b} type="button" disabled={full} onClick={() => doBlock(b)} className="rounded-md border border-white/10 bg-white/5 px-3 py-3 text-left font-display uppercase tracking-wider text-[#E8E6E1] hover:bg-white/10 disabled:opacity-40">
             {LABEL[b]}
           </button>
