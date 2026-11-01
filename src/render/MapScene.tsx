@@ -299,11 +299,13 @@ function CameraRig({ focus }: { focus: { x: number; y: number; z: number } }) {
     animating.current = true;
   }, [preset, focus]);
 
-  useFrame(() => {
+  // Time-based easing: the glide takes the same time on a fast or a slow screen.
+  useFrame((_, delta) => {
     if (!animating.current) return;
-    camera.position.lerp(goalPos.current, 0.08);
+    const k = 1 - Math.exp(-delta * 5);
+    camera.position.lerp(goalPos.current, k);
     if (controls) {
-      controls.target.lerp(goalTarget.current, 0.08);
+      controls.target.lerp(goalTarget.current, k);
       controls.update();
     }
     if (camera.position.distanceTo(goalPos.current) < 2) animating.current = false;

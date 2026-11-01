@@ -44,7 +44,7 @@ const FLAT_TINT = new THREE.Color("#ffffff");
 const HILL_TINT = new THREE.Color("#e6d9b8"); // warmer on higher ground
 const ROCK_TINT = new THREE.Color("#8d7f6c"); // darker on steep faces
 /** Metres of ground covered by one texture tile. Display only. */
-export const GROUND_TILE_M = 60; // TUNABLE — render choice
+export const GROUND_TILE_M = 150; // TUNABLE — render choice: wide enough that the region does not show a repeat grid
 
 interface WaterSurface {
   ring: Xz[];
