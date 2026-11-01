@@ -3,7 +3,7 @@
 import { create } from "zustand";
 import { DEFAULT_SEED } from "../config/balance";
 import { type Speed } from "../sim/calendar";
-import { type CityState, advanceDay, advanceDays, advanceToNextMonth, createCity } from "../sim/city";
+import { type CityState, advanceDays, advanceToNextMonth, createCity } from "../sim/city";
 
 export interface ClockStore {
   city: CityState;
@@ -26,8 +26,3 @@ export const useClock = create<ClockStore>((set, get) => ({
   },
   skipToNextEvent: () => set({ city: advanceToNextMonth(get().city) }),
 }));
-
-/** Single-day step, for tests and the debug panel. */
-export function stepOneDay(city: CityState): CityState {
-  return advanceDay(city);
-}

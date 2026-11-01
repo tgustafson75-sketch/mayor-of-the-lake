@@ -40,7 +40,7 @@ export function createCity(seed: string, size = BALANCE.gridSize): CityState {
 }
 
 /** Capacity of one parcel. Each zone type gives housing units and jobs. */
-export function parcelCapacity(zone: ZoneType): { housing: number; jobs: number } {
+function parcelCapacity(zone: ZoneType): { housing: number; jobs: number } {
   switch (zone) {
     case "residential":
       return { housing: BALANCE.housingPerParcel, jobs: 0 };
@@ -91,7 +91,7 @@ export function advanceDay(city: CityState): CityState {
  * Monthly population change. People move in when there is spare housing and
  * jobs, and move out when housing is over-full or jobs are scarce.
  */
-export function monthlyGrowth(city: CityState): CityState {
+function monthlyGrowth(city: CityState): CityState {
   const rng = new Rng(0);
   rng.restore(city.rng);
   const { housing, jobs } = totals(city);

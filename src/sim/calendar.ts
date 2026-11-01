@@ -48,8 +48,3 @@ export function ticksFor(day: number): LoopTicks {
     yearly: day % DAYS_PER_YEAR === 0,
   };
 }
-
-/** Days advanced per real second at each speed, given a base of one day per second at 1x. */
-export function daysPerSecond(speed: Speed): number {
-  return speed;
-}

@@ -36,12 +36,12 @@ export function createLake(seed: string): LakeState {
 }
 
 /** Chlorophyll-a rises with nutrients. TUNABLE shape. */
-export function chlorophyllFrom(nutrients: number): number {
+function chlorophyllFrom(nutrients: number): number {
   return 10 + 80 * nutrients;
 }
 
 /** Monthly step. Relaxes nutrients to their target, then derives algae and oxygen. */
-export function monthlyLake(lake: LakeState): LakeState {
+function monthlyLake(lake: LakeState): LakeState {
   const rng = new Rng(0);
   rng.restore(lake.rng);
   const inflowLoad = 0.5 + lake.developmentRunoff;

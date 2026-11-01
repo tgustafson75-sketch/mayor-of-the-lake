@@ -7,7 +7,7 @@
 - **AI package (packages/ai-conversations):** standalone. Gemini and Claude providers live in server/ai/.
 
 ## Verified
-- Unit tests: 114 across 19 files, all pass.
+- Unit tests: 114 across 19 files, all pass. Dead-code pass done 2026-11-01 (removed unused helpers and empty folders).
 - Browser tests: map, front page, camera presets, council panel error state.
 - Production build clean.
 - Live: one full talk turn through the server returned a valid intent, a sim outcome, a consistent reply, and updated trust.
@@ -18,7 +18,8 @@
 - Only vote whipping is resolved. Other conversation types have schemas but no resolver.
 - The 3D home, city hall, life screen, council chamber, Promises screen, advisors, social media, elections, game modes and polish (Phases 5 UI to 9) are not built.
 - Budget and politics values are SCENARIO placeholders (D-019). Real rules come from the Phase 5.5 research, which is not done.
-- No git remote. Push is blocked until a remote is set up (see the last session's report).
+- Repo: https://github.com/tgustafson75-sketch/mayor-of-the-lake (public). Static site: https://mayorofthelake.vercel.app.
+- The game server is not public. Deploying it means putting the Gemini key behind an endpoint, which needs rate limits first.
 
 ## How to run
     npm install
