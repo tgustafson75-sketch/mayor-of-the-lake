@@ -1,6 +1,10 @@
 // Council chamber: the agenda, the vote, each member's trust, and the Promises ledger.
 // Outcomes come from the sim. Scenario roster and fit are placeholders (D-019).
 import { COUNCIL_IDS, PROPOSAL, useGame } from "./gameStore";
+import { ADVISOR_NAME, briefAll, type Briefing } from "../sim/advisors";
+import { publicComment } from "../sim/public-comment";
+import { Rng } from "../sim/rng";
+import { useMemo } from "react";
 import { Screen } from "./Screen";
 
 export function CouncilScreen() {
@@ -12,6 +16,10 @@ export function CouncilScreen() {
   const promise = useGame((s) => s.promise);
   const day = useGame((s) => s.life.day);
   const last = votes.at(-1);
+  const sentiment = useGame((s) => s.social.sentiment);
+  const campaign = useGame((s) => s.campaign);
+  const briefings: Briefing[] = useMemo(() => briefAll({ sentiment, campaignStrength: campaign.strength, trust: Object.values(trust).reduce((a, b) => a + b, 0) / COUNCIL_IDS.length }, new Rng(`brief:${day}`)), [sentiment, campaign.strength, trust, day]);
+  const comment = useMemo(() => publicComment(sentiment, new Rng(`comment:${day}`)), [sentiment, day]);
 
   return (
     <Screen title="Council chamber" subtitle={`Agenda · ${PROPOSAL.title}`}>
@@ -26,6 +34,20 @@ export function CouncilScreen() {
           )}
         </div>
       </div>
+
+      <h2 className="mt-6 font-display text-lg uppercase tracking-wider text-[#F4C430]">Public comment</h2>
+      <p className="mt-2 text-sm" aria-label="Public comment">{comment.supporters} speakers for, {comment.opponents} against, from the interest groups.</p>
+
+      <h2 className="mt-6 font-display text-lg uppercase tracking-wider text-[#F4C430]">Advisors</h2>
+      <ul className="mt-2 space-y-2">
+        {briefings.map((b) => (
+          <li key={b.advisor} className="rounded-md border border-white/10 bg-white/5 p-3 text-sm">
+            <div className="flex justify-between"><span className="font-semibold">{ADVISOR_NAME[b.advisor]}</span><span className={b.recommendation === "push" ? "text-emerald-300" : "text-stone-300"}>{b.recommendation}</span></div>
+            <p className="mt-1 text-stone-300">{b.numbers}</p>
+            <p className="mt-1 text-stone-400">{b.tradeoff}{!b.reliable && <span className="text-red-300"> · this read was off</span>}</p>
+          </li>
+        ))}
+      </ul>
 
       <h2 className="mt-6 font-display text-lg uppercase tracking-wider text-[#F4C430]">Members</h2>
       <ul className="mt-2 divide-y divide-white/10 rounded-xl border border-white/10">

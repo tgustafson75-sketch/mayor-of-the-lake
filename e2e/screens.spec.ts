@@ -49,3 +49,22 @@ test("the chosen game mode carries from the menu to the Life screen", async ({ p
   await page.getByRole("link", { name: "New Life" }).click();
   await expect(page.getByText("Builder mode")).toBeVisible();
 });
+
+test("the council chamber shows advisors and public comment", async ({ page }) => {
+  await page.goto("/#council");
+  await expect(page.getByRole("heading", { name: "Advisors" })).toBeVisible();
+  await expect(page.getByLabel("Public comment")).toContainText("speakers for");
+  await expect(page.getByText("Political strategist (fictional)")).toBeVisible();
+});
+
+test("City Hall opens in 3D and links into the council chamber and home", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/");
+  await page.getByRole("link", { name: "City Hall" }).click();
+  await expect(page.getByRole("navigation", { name: "City Hall rooms" })).toBeVisible();
+  await expect(page.locator("canvas")).toBeVisible({ timeout: 90_000 });
+  await page.getByRole("link", { name: "Council chamber" }).click();
+  await expect(page.getByText("Council chamber", { exact: true })).toBeVisible();
+  expect(errors).toEqual([]);
+});

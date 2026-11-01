@@ -6,6 +6,7 @@ import { parseRoute } from "./ui/routes";
 import { LifeScreen } from "./ui/LifeScreen";
 import { CouncilScreen } from "./ui/CouncilScreen";
 import { FeedScreen } from "./ui/FeedScreen";
+import { CityHallScreen } from "./ui/CityHallScreen";
 import { MODES, MODE_ORDER } from "./config/modes";
 import { useMode } from "./ui/modeStore";
 
@@ -24,6 +25,7 @@ const MENU_ITEMS = [
   { label: "New Life", phase: 5, href: "#life" },
   { label: "Council", phase: 6, href: "#council" },
   { label: "Feed", phase: 7, href: "#feed" },
+  { label: "City Hall", phase: 5, href: "#hall" },
   { label: "Settings", phase: 9 },
 ] as const;
 
@@ -34,6 +36,7 @@ export default function App() {
   if (route === "life") return <LifeScreen />;
   if (route === "council") return <CouncilScreen />;
   if (route === "feed") return <FeedScreen />;
+  if (route === "hall") return <CityHallScreen />;
   if (route === "map") {
     return (
       <div className="fixed inset-0">
