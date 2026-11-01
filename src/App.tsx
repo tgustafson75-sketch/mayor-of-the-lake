@@ -6,6 +6,8 @@ import { parseRoute } from "./ui/routes";
 import { LifeScreen } from "./ui/LifeScreen";
 import { CouncilScreen } from "./ui/CouncilScreen";
 import { FeedScreen } from "./ui/FeedScreen";
+import { MODES, MODE_ORDER } from "./config/modes";
+import { useMode } from "./ui/modeStore";
 
 /** Tracks the URL hash, so the "Open the 3D city" link switches screens without a reload. */
 function useHash(): string {
@@ -26,6 +28,8 @@ const MENU_ITEMS = [
 ] as const;
 
 export default function App() {
+  const mode = useMode((s) => s.mode);
+  const setMode = useMode((s) => s.setMode);
   const route = parseRoute(useHash());
   if (route === "life") return <LifeScreen />;
   if (route === "council") return <CouncilScreen />;
@@ -53,6 +57,19 @@ export default function App() {
           </div>
           <p className="mt-3 font-display text-sm uppercase tracking-[0.3em] text-stone-200">Lake Elsinore, California</p>
         </header>
+
+        <fieldset className="flex max-w-xl flex-col gap-2 rounded-xl border border-white/10 bg-[#14161A]/80 p-3 backdrop-blur">
+          <legend className="px-1 font-display text-sm uppercase tracking-wider text-[#F4C430]">Game mode</legend>
+          <div className="flex flex-wrap gap-2">
+            {MODE_ORDER.map((id) => (
+              <label key={id} className={`cursor-pointer rounded-md px-3 py-1.5 font-display text-sm uppercase tracking-wider ${mode === id ? "bg-[#F4C430] text-[#14161A]" : "border border-white/15 text-[#E8E6E1] hover:bg-white/10"}`}>
+                <input type="radio" name="mode" value={id} checked={mode === id} onChange={() => setMode(id)} className="sr-only" />
+                {MODES[id].label}
+              </label>
+            ))}
+          </div>
+          <p className="text-sm text-stone-300">{MODES[mode].blurb}</p>
+        </fieldset>
 
         <nav aria-label="Main menu" className="flex w-64 flex-col gap-3">
           {MENU_ITEMS.map((item) =>

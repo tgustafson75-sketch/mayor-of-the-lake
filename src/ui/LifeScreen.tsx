@@ -2,6 +2,8 @@
 import { BLOCKS, type Block } from "../sim/life";
 import { useGame } from "./gameStore";
 import { winChance } from "../sim/election";
+import { MODES } from "../config/modes";
+import { useMode } from "./modeStore";
 import { Screen } from "./Screen";
 
 const LABEL: Record<Block, string> = {
@@ -16,6 +18,7 @@ const LABEL: Record<Block, string> = {
 
 export function LifeScreen() {
   const life = useGame((s) => s.life);
+  const mode = useMode((s) => s.mode);
   const doBlock = useGame((s) => s.doBlock);
   const sleep = useGame((s) => s.sleep);
   const full = life.blocksToday.length >= 4;
@@ -25,7 +28,7 @@ export function LifeScreen() {
   const odds = Math.round(winChance(sentiment, campaign.strength) * 100);
 
   return (
-    <Screen title="Your life" subtitle={`Day ${life.day + 1} · blocks left ${4 - life.blocksToday.length}`}>
+    <Screen title="Your life" subtitle={`${MODES[mode].label} mode · day ${life.day + 1} · blocks left ${4 - life.blocksToday.length}`}>
       <div className="grid gap-3 sm:grid-cols-2">
         <Meter label="Energy" value={life.needs.energy} />
         <Meter label="Social" value={life.needs.social} />

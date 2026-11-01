@@ -19,7 +19,8 @@
 - Built since: the Life screen (needs, blocks, sleep) and the Council chamber (agenda, vote, whip, Promises ledger), both wired to the sim.
 - Also built: the social feed (posts, reach, sentiment by interest group, quoting past posts), in the sim and on its own screen.
 - Also built: elections (Phase 8, scenario): campaign blocks build strength, the term clock runs on sleep, the result follows sentiment and strength plus one seeded roll, and the odds are shown as a probability.
-- Not built: the 3D home and city hall, advisors, public comment, press interviews and AI tone classification, recall, the four game modes, voice and the desktop build.
+- Also built: the four game modes (Life, Builder, Politics, Spectator) as flags in src/config/modes.ts, chosen on the menu and shown on the Life screen. Mode flags do not yet change what the screens allow; that wiring is next.
+- Not built: the 3D home and city hall, advisors, public comment, press interviews and AI tone classification, recall, voice and the desktop build.
 - Budget and politics values are SCENARIO placeholders (D-019). Real rules come from the Phase 5.5 research, which is not done.
 - Repo: https://github.com/tgustafson75-sketch/mayor-of-the-lake (public). Static site: https://mayorofthelake.vercel.app.
 - The game server is not public. Deploying it means putting the Gemini key behind an endpoint, which needs rate limits first.

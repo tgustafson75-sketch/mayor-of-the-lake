@@ -42,3 +42,10 @@ test("campaigning raises strength and the shown odds, and the election clock is 
   expect(strengthAfter).not.toBe(strengthBefore);
   expect(strengthAfter).toMatch(/campaign strength [1-9]\d*/);
 });
+
+test("the chosen game mode carries from the menu to the Life screen", async ({ page }) => {
+  await page.goto("/");
+  await page.getByLabel("Builder").check({ force: true });
+  await page.getByRole("link", { name: "New Life" }).click();
+  await expect(page.getByText("Builder mode")).toBeVisible();
+});
