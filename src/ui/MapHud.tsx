@@ -2,6 +2,7 @@
 // (the time controls run a clock, so a second copy would double-tick).
 // Only sourced values are shown. Sim values (budget, year, jobs, ratings) appear in their phases.
 import { useState } from "react";
+import { hrefFor } from "./routes";
 import { POPULATION_2025 } from "../config/realworld";
 import { CameraSwitcher } from "./CameraSwitcher";
 import { CouncilTalk } from "./CouncilTalk";
@@ -20,23 +21,30 @@ const NAV = [
 
 const PANEL = "rounded-xl border border-white/10 bg-[#14161A]/90 backdrop-blur-md shadow-2xl";
 
-export function MapHud() {
+export function MapHud({ onMenu }: { onMenu?: () => void }) {
   const wide = useMediaQuery("(min-width: 640px)");
   return (
     <div className="pointer-events-none absolute inset-0 font-sans text-[#E8E6E1]">
-      <TopBar compact={!wide} />
+      <TopBar compact={!wide} onMenu={onMenu} />
       {wide ? <DesktopLayout /> : <MobileLayout />}
       <Attribution />
     </div>
   );
 }
 
-function TopBar({ compact }: { compact: boolean }) {
+function TopBar({ compact, onMenu }: { compact: boolean; onMenu?: () => void }) {
   return (
     <header className={`pointer-events-auto absolute left-3 right-3 top-3 flex items-center gap-4 ${PANEL} px-4 py-2 sm:left-4 sm:right-4 sm:top-4 sm:px-5`}>
       <img src="/assets/brand/logo.png" alt="Mayor of the Lake" className={compact ? "h-11 w-auto" : "h-16 w-auto"} />
       {!compact && <p className="font-display text-xs uppercase tracking-[0.3em] text-stone-400">Lake Elsinore, California</p>}
-      <div className="ml-auto text-right">
+      <a
+        href={hrefFor("menu")}
+        onClick={onMenu}
+        className="pointer-events-auto ml-auto rounded-md border border-white/15 px-3 py-1.5 font-display text-xs uppercase tracking-wider text-[#E8E6E1] hover:bg-white/10"
+      >
+        ← Main menu
+      </a>
+      <div className="text-right">
         <p className="font-display text-xl font-bold tabular-nums text-[#F4C430] sm:text-2xl">{POPULATION_2025.toLocaleString("en-US")}</p>
         <p className="font-display text-[10px] uppercase tracking-[0.25em] text-stone-400">Population · 2025 · CA DOF</p>
       </div>

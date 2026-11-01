@@ -2,6 +2,7 @@
 // opens the 3D city with the HUD. Menu buttons are placeholders until their phases.
 import { useEffect, useState } from "react";
 import MapView from "./ui/MapView";
+import { parseRoute } from "./ui/routes";
 
 /** Tracks the URL hash, so the "Open the 3D city" link switches screens without a reload. */
 function useHash(): string {
@@ -21,8 +22,8 @@ const MENU_ITEMS = [
 ] as const;
 
 export default function App() {
-  const hash = useHash();
-  if (hash === "#map") {
+  const route = parseRoute(useHash());
+  if (route === "map") {
     return (
       <div className="fixed inset-0">
         <MapView mode="full" />

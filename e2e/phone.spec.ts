@@ -17,3 +17,11 @@ test("phone: bottom dock opens each tool sheet, and the sheet's controls are cli
   await expect(page.getByRole("dialog", { name: "time" }).getByRole("group", { name: "Time controls" })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("phone: the main menu link is reachable on the map and returns to the menu", async ({ page }) => {
+  await page.goto("/#map");
+  const back = page.getByRole("link", { name: "← Main menu" });
+  await expect(back).toBeVisible({ timeout: 90_000 });
+  await back.click();
+  await expect(page.getByRole("navigation", { name: "Main menu" })).toBeVisible();
+});
