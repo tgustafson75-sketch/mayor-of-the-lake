@@ -20,20 +20,31 @@ export interface DialogueResult {
   usage: Usage;
 }
 
+/** Writes a reply and checks it. One retry with the mismatch stated, then the result is reported as it stands. */
 export async function writeDialogue(provider: AiProvider, input: DialogueInput): Promise<DialogueResult> {
   const usage: Usage = { inputTokens: 0, outputTokens: 0 };
-  const system = `You are ${input.npcName}. ${input.voice} Speak in character, two or three sentences, as spoken dialogue only: no notes, no labels, no stage directions. You must express this outcome exactly: ${input.outcome.kind} (${input.outcome.reason}).`;
-  const user = input.memory.length ? `What you remember:\n- ${input.memory.join("\n- ")}` : "No earlier history.";
-  const res = await provider.complete({ task: "dialogue:npc", system, user });
-  add(usage, res.usage);
+  const system = `You are ${input.npcName}. ${input.voice} Reply with only the words the character says aloud, two or three sentences. No drafts, no notes, no labels, no stage directions, no alternatives. You must express this outcome exactly: ${input.outcome.kind} (${input.outcome.reason}).`;
+  const memory = input.memory.length ? `What you remember:\n- ${input.memory.join("\n- ")}` : "No earlier history.";
 
-  const check = await provider.complete({
-    task: "check:consistency",
-    system: "Does this NPC reply express the required outcome? Reply JSON {\"consistent\": true|false}.",
-    user: `Outcome: ${input.outcome.kind}. Reply: ${res.text}`,
-  });
-  add(usage, check.usage);
-  return { text: res.text, consistent: parseConsistent(check.text), usage };
+  let feedback = "";
+  let text = "";
+  let consistent = false;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const res = await provider.complete({ task: "dialogue:npc", system, user: feedback ? `${memory}\n\n${feedback}` : memory });
+    add(usage, res.usage);
+    text = res.text;
+
+    const check = await provider.complete({
+      task: "check:consistency",
+      system: "Does this NPC reply express the required outcome? Reply JSON {\"consistent\": true|false}.",
+      user: `Outcome: ${input.outcome.kind}. Reply: ${text}`,
+    });
+    add(usage, check.usage);
+    consistent = parseConsistent(check.text);
+    if (consistent) break;
+    feedback = `Your last reply did not clearly express "${input.outcome.kind}". Rewrite it so the outcome is unmistakable.`;
+  }
+  return { text, consistent, usage };
 }
 
 export function parseConsistent(text: string): boolean {

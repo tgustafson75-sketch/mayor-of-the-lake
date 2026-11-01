@@ -31,3 +31,24 @@ describe("dialogue writer and consistency check", () => {
     expect(parseConsistent('{"consistent": true}')).toBe(true);
   });
 });
+
+describe("dialogue retry", () => {
+  it("retries once when the first reply is inconsistent, and keeps the corrected reply", async () => {
+    let writes = 0;
+    const p = createStubProvider((req) => {
+      if (req.task === "check:consistency") return req.user.includes("Fine by me") ? '{"consistent": false}' : '{"consistent": true}';
+      writes++;
+      return writes === 1 ? "Fine by me." : "No, I won't support it.";
+    });
+    const r = await writeDialogue(p, { npcName: "X", voice: "", memory: [], outcome });
+    expect(writes).toBe(2);
+    expect(r.consistent).toBe(true);
+    expect(r.text).toBe("No, I won't support it.");
+  });
+
+  it("reports inconsistent after the retry also fails, rather than hiding it", async () => {
+    const p = createStubProvider((req) => (req.task === "check:consistency" ? '{"consistent": false}' : "Sure."));
+    const r = await writeDialogue(p, { npcName: "X", voice: "", memory: [], outcome });
+    expect(r.consistent).toBe(false);
+  });
+});

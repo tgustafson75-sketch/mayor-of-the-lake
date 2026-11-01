@@ -28,17 +28,19 @@ export function createGeminiProvider(apiKey: string): AiProvider {
         body: JSON.stringify({
           systemInstruction: { parts: [{ text: request.system }] },
           contents: [{ role: "user", parts: [{ text: request.user }] }],
-          generationConfig: { maxOutputTokens: 400, temperature: 0.7 },
+          generationConfig: { maxOutputTokens: 2048, temperature: 0.7 },
         }),
       });
       const body = (await res.json()) as {
         error?: { status?: string; message?: string };
-        candidates?: { content?: { parts?: { text?: string }[] } }[];
+        candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[];
         usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number };
       };
       if (!res.ok || body.error) {
         throw new Error(`Gemini ${res.status} ${body.error?.status ?? ""} ${body.error?.message ?? ""}`.trim());
       }
+      // A cut-off reply is an error, not a short answer.
+      if (body.candidates?.[0]?.finishReason === "MAX_TOKENS") throw new Error(`Gemini reply was cut off at the token limit (${request.task})`);
       const text = (body.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("");
       return {
         text,

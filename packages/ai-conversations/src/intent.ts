@@ -13,7 +13,9 @@ const CLARIFY = "I didn't quite catch what you're asking. Could you say it anoth
 export async function parseIntent(provider: AiProvider, type: ConversationType, text: string): Promise<ParseResult> {
   const schema = SCHEMAS[type];
   const task = `intent:${type}`;
-  const system = `Convert the player's message into JSON for the "${type}" conversation. Reply with JSON only.`;
+  // The model must see the exact field names, or it invents its own.
+  const shape = JSON.stringify(z.toJSONSchema(schema));
+  const system = `Convert the player's message into JSON for the "${type}" conversation. Use exactly these fields and no others. JSON Schema: ${shape}. Reply with the JSON object only, no code fence, no prose.`;
   const usage: Usage = { inputTokens: 0, outputTokens: 0 };
 
   let user = text;
