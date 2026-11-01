@@ -1,6 +1,18 @@
 // Front page: the photoreal hero image of the lake, with the menu over it. #map
 // opens the 3D city with the HUD. Menu buttons are placeholders until their phases.
+import { useEffect, useState } from "react";
 import MapView from "./ui/MapView";
+
+/** Tracks the URL hash, so the "Open the 3D city" link switches screens without a reload. */
+function useHash(): string {
+  const [hash, setHash] = useState(() => window.location.hash);
+  useEffect(() => {
+    const onChange = () => setHash(window.location.hash);
+    window.addEventListener("hashchange", onChange);
+    return () => window.removeEventListener("hashchange", onChange);
+  }, []);
+  return hash;
+}
 
 const MENU_ITEMS = [
   { label: "New Life", phase: 5 },
@@ -9,7 +21,8 @@ const MENU_ITEMS = [
 ] as const;
 
 export default function App() {
-  if (window.location.hash === "#map") {
+  const hash = useHash();
+  if (hash === "#map") {
     return (
       <div className="fixed inset-0">
         <MapView mode="full" />
@@ -27,7 +40,9 @@ export default function App() {
 
       <div className="relative flex min-h-screen flex-col justify-center gap-10 p-6 sm:p-16">
         <header className="pointer-events-none">
-          <img src="/assets/brand/logo.png" alt="Mayor of the Lake" className="w-72 drop-shadow-xl sm:w-96" />
+          <div className="inline-block rounded-2xl border border-white/10 bg-[#14161A]/95 p-4 shadow-2xl backdrop-blur-md">
+            <img src="/assets/brand/logo.png" alt="Mayor of the Lake" className="w-64 rounded-lg sm:w-80" />
+          </div>
           <p className="mt-3 font-display text-sm uppercase tracking-[0.3em] text-stone-200">Lake Elsinore, California</p>
         </header>
 

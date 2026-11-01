@@ -16,3 +16,9 @@ test("the app is installable: manifest, icons and iOS install tags", async ({ pa
   const bytes = await icon.body();
   expect(bytes.subarray(0, 8).toString("hex")).toBe("89504e470d0a1a0a"); // real PNG signature
 });
+
+test("the front page link opens the map without a reload", async ({ page }) => {
+  await page.goto("/");
+  await page.getByRole("link", { name: "Open the 3D city" }).click();
+  await expect(page.getByRole("toolbar", { name: "Map tools" }).or(page.getByRole("region", { name: "Talk to council" }))).toBeVisible({ timeout: 90_000 });
+});
