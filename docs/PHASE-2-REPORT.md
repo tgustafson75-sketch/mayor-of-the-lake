@@ -9,7 +9,7 @@
 - docs/DATA-MODEL.md, docs/DECISIONS.md D-016 to D-018.
 
 ## Tests
-- `npx vitest run`: sim tests pass (calendar 3, city 11 including the 20-year run). Full suite count is in the commit message.
+- `npx vitest run`: 49 unit tests pass across the whole repo (sim: calendar 3, city 9 including the 20-year run). `npx playwright test`: 3 pass.
 - The 20-year headless run covers: population inside bands, growth toward target, one growth report per month, determinism, a JSON save replaying identically, and zoning changing the outcome.
 
 ## Not done yet (by design)
