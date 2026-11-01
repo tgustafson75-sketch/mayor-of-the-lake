@@ -4,9 +4,9 @@ import type { VoteWhipIntent } from "./schemas";
 import type { z } from "zod";
 
 export type Outcome =
-  | { kind: "agree"; relationshipDelta: number; reason: string }
-  | { kind: "counter"; relationshipDelta: number; reason: string }
-  | { kind: "refuse"; relationshipDelta: number; reason: string };
+  | { kind: "agree"; reason: string }
+  | { kind: "counter"; reason: string }
+  | { kind: "refuse"; reason: string };
 
 /** What the sim knows about the NPC. The model never sees more than this summary. */
 export interface NpcState {
@@ -35,12 +35,12 @@ export function resolveVoteWhip(npc: NpcState, intent: VoteIntent, rng: Random):
   const p = clamp(0.5 + npc.trust * 0.35 + offerBonus + TONE_BIAS[intent.tone], 0, 1);
   const roll = rng.next();
   if (roll < p) {
-    return { kind: "agree", relationshipDelta: intent.offer.type === "none" ? 0.02 : -0.02, reason: "support" };
+    return { kind: "agree", reason: "support" };
   }
   if (roll < p + (1 - p) * 0.5) {
-    return { kind: "counter", relationshipDelta: 0, reason: "wants something in return" };
+    return { kind: "counter", reason: "wants something in return" };
   }
-  return { kind: "refuse", relationshipDelta: -0.05, reason: "not persuaded" };
+  return { kind: "refuse", reason: "not persuaded" };
 }
 
 function clamp(v: number, lo: number, hi: number): number {

@@ -34,3 +34,14 @@ test("front page shows the photoreal hero behind the menu", async ({ page }) => 
   await expect.poll(() => hero.evaluate((img: HTMLImageElement) => img.naturalWidth)).toBeGreaterThan(0);
   expect(errors).toEqual([]);
 });
+
+test("council talk panel is on the map and reports a missing server clearly", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/#map");
+  await expect(page.getByRole("region", { name: "Talk to council" })).toBeVisible({ timeout: 90_000 });
+  await page.getByLabel("What you say").fill("Back the plan");
+  await page.getByRole("button", { name: "Say it" }).click();
+  await expect(page.getByRole("alert")).toBeVisible({ timeout: 15_000 });
+  expect(errors).toEqual([]);
+});

@@ -27,7 +27,7 @@ const reply = await writeDialogue(provider, {
   npcName: "Council Member (fictional)",
   voice: "Measured and careful. Speaks plainly.",
   memory: [],
-  outcome: { kind: "counter", relationshipDelta: 0, reason: "wants something in return" },
+  outcome: { kind: "counter", reason: "wants something in return" },
 });
 cost.add(reply.usage);
 console.log("dialogue:", reply.text);

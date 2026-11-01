@@ -3,7 +3,7 @@ import { createStubProvider } from "./stub-provider";
 import { writeDialogue, parseConsistent } from "./dialogue";
 import type { Outcome } from "./resolver";
 
-const outcome: Outcome = { kind: "refuse", relationshipDelta: -0.05, reason: "not persuaded" };
+const outcome: Outcome = { kind: "refuse", reason: "not persuaded" };
 
 describe("dialogue writer and consistency check", () => {
   it("passes the outcome and only the NPC's own memory into the prompt", async () => {

@@ -2,6 +2,7 @@
 // own (budget, year, jobs, ratings) is absent until its phase lands.
 import { POPULATION_2025 } from "../config/realworld";
 import { CameraSwitcher } from "./CameraSwitcher";
+import { CouncilTalk } from "./CouncilTalk";
 import { TimeControls } from "./TimeControls";
 
 const NAV = [
@@ -45,6 +46,10 @@ export function MapHud() {
       <div className="pointer-events-auto absolute bottom-14 right-4 flex flex-col gap-2 rounded-xl border border-white/10 bg-stone-950/80 px-3 py-2 backdrop-blur">
         <CameraSwitcher />
         <TimeControls />
+      </div>
+
+      <div className="pointer-events-none absolute bottom-14 left-4">
+        <CouncilTalk />
       </div>
 
       <footer className="pointer-events-auto absolute bottom-3 left-1/2 -translate-x-1/2 rounded-md bg-stone-950/70 px-3 py-1 text-[11px] text-stone-300">
