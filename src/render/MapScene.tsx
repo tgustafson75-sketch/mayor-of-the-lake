@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
-import { OrbitControls, Sky } from "@react-three/drei";
+import { OrbitControls, Sky, useTexture } from "@react-three/drei";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import mapJson from "../../data/processed/lake-elsinore-map.json";
 import {
@@ -13,6 +13,7 @@ import {
   buildRoads,
   buildSkirt,
   buildTerrain,
+  GROUND_TILE_M,
   buildWater,
   lakeCentre,
   treePlacements,
@@ -52,29 +53,39 @@ function getAssets() {
   return assets;
 }
 
-/** Procedural facade: a grid of dark windows on a white tile. Tinted by vertex colour. */
-function makeWindowTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement("canvas");
-  canvas.width = 128;
-  canvas.height = 128;
-  const g = canvas.getContext("2d")!;
-  g.fillStyle = "#ffffff";
-  g.fillRect(0, 0, 128, 128);
-  for (const x of [14, 78]) {
-    for (const y of [18, 82]) {
-      g.fillStyle = "#2b3643";
-      g.fillRect(x, y, 36, 28);
-      g.fillStyle = "#e9eef2";
-      g.fillRect(x - 2, y + 28, 40, 3); // sill
-    }
-  }
-  const tex = new THREE.CanvasTexture(canvas);
-  tex.wrapS = THREE.RepeatWrapping;
-  tex.wrapT = THREE.RepeatWrapping;
-  tex.repeat.set(1 / 10, 1 / 10); // one tile per 10 m of wall
-  tex.colorSpace = THREE.SRGBColorSpace;
-  tex.anisotropy = 8;
-  return tex;
+/** Photoreal tiles from scripts/assets/generate.ts, one per surface. Metres per tile set per surface. */
+const TEXTURE_PATHS = {
+  ground: "/assets/photoreal/tex-ground.png",
+  water: "/assets/photoreal/tex-water.png",
+  facade: "/assets/photoreal/tex-facade.png",
+  roof: "/assets/photoreal/tex-roof.png",
+} as const;
+const TILE_M = { ground: GROUND_TILE_M, water: 2000, facade: 12, roof: 30 } as const;
+
+function usePhotoTextures() {
+  const [ground, water, facade, roof] = useTexture([
+    TEXTURE_PATHS.ground,
+    TEXTURE_PATHS.water,
+    TEXTURE_PATHS.facade,
+    TEXTURE_PATHS.roof,
+  ]);
+  return useMemo(() => {
+    // Mirrored wrapping hides seams even where a generated tile is not perfectly seamless.
+    const prep = (tex: THREE.Texture, tileM: number) => {
+      tex.wrapS = THREE.MirroredRepeatWrapping;
+      tex.wrapT = THREE.MirroredRepeatWrapping;
+      tex.repeat.set(1 / tileM, 1 / tileM);
+      tex.colorSpace = THREE.SRGBColorSpace;
+      tex.anisotropy = 8;
+      return tex;
+    };
+    return {
+      ground: prep(ground, TILE_M.ground),
+      water: prep(water, TILE_M.water),
+      facade: prep(facade, TILE_M.facade),
+      roof: prep(roof, TILE_M.roof),
+    };
+  }, [ground, water, facade, roof]);
 }
 
 function Lighting() {
@@ -165,27 +176,27 @@ function Trees({ placements }: { placements: TreePlacement[] }) {
 
 function MapMeshes() {
   const { terrain, skirt, water, roads, buildings, trees } = getAssets();
-  const windowMap = useMemo(() => makeWindowTexture(), []);
-  useEffect(() => () => windowMap.dispose(), [windowMap]);
+  const tex = usePhotoTextures();
 
   return (
     <group scale={[1, VERTICAL_EXAGGERATION, 1]}>
       <mesh geometry={terrain} receiveShadow>
-        <meshStandardMaterial vertexColors roughness={0.95} metalness={0} />
+        <meshStandardMaterial vertexColors map={tex.ground} roughness={0.95} metalness={0} />
       </mesh>
       <mesh geometry={skirt}>
         <meshStandardMaterial color="#4a4134" roughness={1} side={THREE.DoubleSide} />
       </mesh>
 
       {water && (
-        <mesh geometry={water} position={[0, 0.2, 0]} receiveShadow>
+        <mesh geometry={water} position={[0, 0.2, 0]}>
           <meshPhysicalMaterial
-            color="#1d5b7a"
-            roughness={0.12}
+            map={tex.water}
+            color="#8fb9c9"
+            roughness={0.22}
             metalness={0}
-            clearcoat={0.6}
-            clearcoatRoughness={0.1}
-            envMapIntensity={0.55}
+            clearcoat={0.2}
+            clearcoatRoughness={0.3}
+            envMapIntensity={0.45}
           />
         </mesh>
       )}
@@ -198,12 +209,12 @@ function MapMeshes() {
 
       {buildings.roofs && (
         <mesh geometry={buildings.roofs} castShadow receiveShadow>
-          <meshStandardMaterial vertexColors roughness={0.9} />
+          <meshStandardMaterial vertexColors map={tex.roof} roughness={0.9} />
         </mesh>
       )}
       {buildings.walls && (
         <mesh geometry={buildings.walls} castShadow receiveShadow>
-          <meshStandardMaterial vertexColors map={windowMap} roughness={0.75} />
+          <meshStandardMaterial vertexColors map={tex.facade} roughness={0.75} />
         </mesh>
       )}
 

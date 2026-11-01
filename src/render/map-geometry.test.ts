@@ -132,6 +132,13 @@ describe("buildings: roofs, walls and colour", () => {
   });
 });
 
+describe("terrain UVs", () => {
+  it("gives every terrain vertex a UV, scaled in metres per tile", () => {
+    const geo = buildTerrain(map);
+    expect(geo.getAttribute("uv").count).toBe(W * H);
+  });
+});
+
 describe("terrain colour", () => {
   it("gives every vertex an RGB colour in [0, 1]", () => {
     const col = buildTerrain(map).getAttribute("color");

@@ -1,0 +1,42 @@
+[
+  {
+    "id": "hero-lake",
+    "model": "gemini-3-pro-image",
+    "file": "hero-lake.png",
+    "promptSha256": "0a3717437c3291bc48f6478fde1742dd4d7697e076aee910de4b72a003154c66",
+    "createdAt": "2026-11-01T05:42:23.173Z",
+    "prompt": "Wide 16:9 aerial photograph at golden hour of a large freshwater lake in Southern California, a palm-lined lakeside promenade with a small marina, low tan hills behind, a modest town on the far shore, hazy blue sky. Photorealistic, natural daylight, true-to-life colour, sharp detail, no text, no logos, no people."
+  },
+  {
+    "id": "tex-ground",
+    "model": "gemini-3-pro-image",
+    "file": "tex-ground.png",
+    "promptSha256": "820bf948fc8b6c0dfe2740ffc585c48547c488517ad64cdf3391fa276ddbb5e4",
+    "createdAt": "2026-11-01T05:42:41.698Z",
+    "prompt": "Seamless tileable top-down texture of dry Southern California valley grass and bare soil with small rocks, photographed from directly above. Edges must match exactly so it tiles. Photorealistic, natural daylight, true-to-life colour, sharp detail, no text, no logos, no people."
+  },
+  {
+    "id": "tex-water",
+    "model": "gemini-3-pro-image",
+    "file": "tex-water.png",
+    "promptSha256": "f3b13390a1cb2f4c71b86c9d82c204d0f9fdb82ca4b952eb2d52d9c274f772fb",
+    "createdAt": "2026-11-01T05:48:51.188Z",
+    "prompt": "Seamless tileable top-down photo texture of smooth, calm, uniform deep teal lake water. Subtle, low-contrast. Edges match so it tiles. Photorealistic, no text, no people."
+  },
+  {
+    "id": "tex-facade",
+    "model": "gemini-3-pro-image",
+    "file": "tex-facade.png",
+    "promptSha256": "7cbe308badd20fdf4ccee92b3f71da903b9e286e1402ba8f8fe003ce80b63d1f",
+    "createdAt": "2026-11-01T05:43:09.290Z",
+    "prompt": "Seamless tileable close-up texture of a light cream stucco building facade with evenly spaced rectangular dark-glass windows in a regular grid. Edges must match exactly so it tiles. Photorealistic, natural daylight, true-to-life colour, sharp detail, no text, no logos, no people."
+  },
+  {
+    "id": "tex-roof",
+    "model": "gemini-3-pro-image",
+    "file": "tex-roof.png",
+    "promptSha256": "8af53a29452a6d03d56a4e491ccfd09154f835d097373b9712ed68f820cc0892",
+    "createdAt": "2026-11-01T05:43:23.546Z",
+    "prompt": "Seamless tileable top-down texture of a commercial building roof: dark grey membrane with small gravel and HVAC units spaced regularly. Edges must match exactly so it tiles. Photorealistic, natural daylight, true-to-life colour, sharp detail, no text, no logos, no people."
+  }
+]

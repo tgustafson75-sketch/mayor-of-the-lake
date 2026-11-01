@@ -36,9 +36,12 @@ export const LAKE_BED_DEPTH_M = 4; // TUNABLE — not sourced
 
 const WALL_TINTS = ["#ece1cc", "#dccbab", "#cbb99b", "#f3eee4", "#bfb8aa", "#e6d3b3"];
 const ROOF_TINTS = ["#5b5b60", "#6e5b4b", "#7f7d78", "#4f5359"];
-const LOW_GROUND = new THREE.Color("#6f8c4a"); // valley floor, green
-const DRY_GROUND = new THREE.Color("#c2a266"); // dry hills, tan
-const ROCK = new THREE.Color("#8d7f6c"); // steep faces
+// Vertex colours multiply the photoreal textures, so they stay near white.
+const FLAT_TINT = new THREE.Color("#ffffff");
+const HILL_TINT = new THREE.Color("#e6d9b8"); // warmer on higher ground
+const ROCK_TINT = new THREE.Color("#8d7f6c"); // darker on steep faces
+/** Metres of ground covered by one texture tile. Display only. */
+export const GROUND_TILE_M = 60; // TUNABLE — render choice
 
 interface WaterSurface {
   ring: Xz[];
@@ -140,16 +143,21 @@ export function buildTerrain(map: MapData): THREE.BufferGeometry {
   // Colour needs the normals, so it is set after them.
   const normal = geo.getAttribute("normal");
   const colors = new Float32Array(W * H * 3);
+  const uvs = new Float32Array(W * H * 2);
   const tmp = new THREE.Color();
   for (let i = 0; i < W * H; i++) {
     const elev = clamp((map.elevationM[i] - minM) / (maxM - minM), 0, 1);
-    tmp.copy(LOW_GROUND).lerp(DRY_GROUND, elev);
+    tmp.copy(FLAT_TINT).lerp(HILL_TINT, elev);
     // ny is 1 on flat ground and falls toward 0 on steep faces.
     const steep = clamp((0.9 - normal.getY(i)) / 0.5, 0, 1);
-    tmp.lerp(ROCK, steep);
+    tmp.lerp(ROCK_TINT, steep);
     colors.set([tmp.r, tmp.g, tmp.b], i * 3);
+    const x = positions[i * 3];
+    const z = positions[i * 3 + 2];
+    uvs.set([x / GROUND_TILE_M, z / GROUND_TILE_M], i * 2);
   }
   geo.setAttribute("color", new THREE.BufferAttribute(colors, 3));
+  geo.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
   return geo;
 }
 
