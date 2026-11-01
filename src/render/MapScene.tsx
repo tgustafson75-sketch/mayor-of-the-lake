@@ -5,7 +5,6 @@ import * as THREE from "three";
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, Sky, useTexture } from "@react-three/drei";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
-import mapJson from "../../data/processed/lake-elsinore-map.json";
 import {
   type MapData,
   type TreePlacement,
@@ -21,8 +20,6 @@ import {
 
 export type MapMode = "backdrop" | "full";
 
-const map = mapJson as unknown as MapData;
-
 /** Display-only vertical exaggeration so the hills read at city scale. Not sim data. */
 const VERTICAL_EXAGGERATION = 2; // TUNABLE — render choice, not a fact
 
@@ -34,11 +31,24 @@ const ROAD_COLORS: Readonly<Record<string, string>> = {
   tertiary: "#62626a",
 };
 
-const focus = lakeCentre(map);
+// The map is ~2 MB of data. It is fetched at runtime, not bundled, and Suspense
+// holds the scene until it arrives.
+let mapData: MapData | null = null;
+let mapLoading: Promise<void> | null = null;
+function useMapData(): MapData {
+  if (mapData) return mapData;
+  mapLoading ??= fetch("/data/lake-elsinore-map.json")
+    .then((r) => {
+      if (!r.ok) throw new Error(`map data failed to load: HTTP ${r.status}`);
+      return r.json() as Promise<MapData>;
+    })
+    .then((d) => {
+      mapData = d;
+    });
+  throw mapLoading;
+}
 
-// Built once per page load. Heavy, so it is shared by both modes.
-let assets: ReturnType<typeof buildAssets> | null = null;
-function buildAssets() {
+function buildAssets(map: MapData) {
   return {
     terrain: buildTerrain(map),
     skirt: buildSkirt(map),
@@ -47,10 +57,6 @@ function buildAssets() {
     buildings: buildBuildings(map),
     trees: treePlacements(map),
   };
-}
-function getAssets() {
-  assets ??= buildAssets();
-  return assets;
 }
 
 /** Photoreal tiles from scripts/assets/generate.ts, one per surface. Metres per tile set per surface. */
@@ -174,8 +180,8 @@ function Trees({ placements }: { placements: TreePlacement[] }) {
   );
 }
 
-function MapMeshes() {
-  const { terrain, skirt, water, roads, buildings, trees } = getAssets();
+function MapMeshes({ map }: { map: MapData }) {
+  const { terrain, skirt, water, roads, buildings, trees } = useMemo(() => buildAssets(map), [map]);
   const tex = usePhotoTextures();
 
   return (
@@ -224,6 +230,8 @@ function MapMeshes() {
 }
 
 export default function MapScene({ mode }: { mode: MapMode }) {
+  const map = useMapData();
+  const focus = useMemo(() => lakeCentre(map), [map]);
   const full = mode === "full";
   const cam = full
     ? { position: [focus.x - 3000, focus.y * VERTICAL_EXAGGERATION + 4800, focus.z + 5600] as [number, number, number], fov: 40 }
@@ -242,7 +250,7 @@ export default function MapScene({ mode }: { mode: MapMode }) {
       <fog attach="fog" args={["#d8e4ea", 30000, 120000]} />
       <Lighting />
       <ImageBasedLight />
-      <MapMeshes />
+      <MapMeshes map={map} />
       <OrbitControls
         target={target}
         autoRotate={!full}

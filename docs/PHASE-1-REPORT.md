@@ -39,3 +39,15 @@ Raw downloads are in data/raw/ (gitignored). Reproduce with `scripts/data/fetch.
 - Added: roof/wall split with per-building tints, procedural window facades, about 10k trees along roads and on the valley floor (seeded), slope-based ground colour, a dark tile skirt, image-based light from a built-in room, a lake-focused camera.
 - Tests: 36 unit, 3 browser. Build passes.
 - Still short of "elite": the shoreline is stepped because the DEM is 35 m per sample; the look is a clean stylised-real model, not the photoreal target; the map chunk is 2.9 MB (map data plus three.js); there is no street-level camera yet; no Lake/Budget/Council panels beyond placeholders.
+
+## Update: photoreal pipeline, runtime map data (2026-11-01)
+- Photoreal assets generated with Gemini (scripts/assets/generate.ts): hero front-page photo plus tileable ground, water, facade and roof textures. Keys are read from the gitignored server/.env. Lessons in docs/PHOTOREAL-PIPELINE.md.
+- Water is a calm 2 km tile with mirrored wrapping. Earlier glint and lattice artifacts are fixed.
+- The map JSON (2 MB) is now fetched at runtime from public/data/. The scene chunk fell from 2.9 MB to 912 KB (242 KB gzipped).
+- Road ribbons lifted 2.5 m clear of the terrain grid.
+- Demographics (approximate, Census QuickFacts, retrieved 2026-11-01) in src/config/realworld.ts with sources.
+- Tests: 37 unit, 3 browser (own port 5183, one worker).
+
+## Status at this gate
+- Phase 1 real map: done, with a photoreal pass. Not "elite" in the strict sense: buildings are small at city zoom, the shoreline is stepped (35 m DEM), and vegetation is sparse.
+- Stopping here for review, per the build plan. Phase 2 (city sim core, time controls, loops) starts only after Tim's sign-off.

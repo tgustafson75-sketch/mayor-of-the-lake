@@ -219,7 +219,7 @@ export function buildWater(map: MapData): THREE.BufferGeometry | null {
 /** One ribbon mesh per OSM road class. Each ribbon hugs the terrain. */
 export function buildRoads(map: MapData): Map<string, THREE.BufferGeometry> {
   const byClass = new Map<string, number[]>();
-  const LIFT_M = 0.8; // keeps the ribbon above the grid so it doesn't z-fight
+  const LIFT_M = 2.5; // clears the 35 m grid between samples so roads aren't hidden under the ground
 
   for (const road of map.roads) {
     const width = ROAD_WIDTH_M[road.class];
