@@ -31,6 +31,19 @@ test("the feed: a post is published, shows its reach, and moves sentiment", asyn
   await page.getByRole("button", { name: "Publish" }).click();
   await expect(page.getByText("Lake clean-up starts Monday")).toBeVisible();
   await expect(page.getByText(/reach \d+/)).toBeVisible();
+  // No game server in this test run: the classifier is unavailable, so the player's buttons label the post.
+  await expect(page.getByText(/labelled by you/)).toBeVisible();
+});
+
+test("the feed: the AI classifier labels a post when it is available", async ({ page }) => {
+  await page.route("**/api/classify", (route) =>
+    route.fulfill({ status: 200, contentType: "application/json", body: JSON.stringify({ tone: "firm", topic: "taxes" }) }),
+  );
+  await page.goto("/");
+  await page.getByRole("link", { name: "Feed" }).click();
+  await page.getByLabel("Your post").fill("No new taxes this year");
+  await page.getByRole("button", { name: "Publish" }).click();
+  await expect(page.getByText(/taxes · firm · labelled by AI · reach \d+/)).toBeVisible();
 });
 
 test("campaigning raises strength and the shown odds, and the election clock is visible", async ({ page }) => {

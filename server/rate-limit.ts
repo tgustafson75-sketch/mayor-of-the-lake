@@ -1,7 +1,7 @@
-// Limits on the public talk endpoint. This protects the paid Gemini key.
+// Limits on the public talk and classify endpoints. They protect the Gemini key's quota.
 // Counters live in memory, per function instance. Serverless instances start
-// and stop, so these are best-effort brakes, not a billing guarantee. The hard
-// spending cap is set in Google Cloud billing (see docs/APP-STATUS.md).
+// and stop, so these are best-effort brakes, not a billing guarantee. The key's
+// project is on the free tier with no billing (see docs/APP-STATUS.md).
 
 export interface Limits {
   perIpPerMinute: number;

@@ -3,8 +3,12 @@
 // author's reputation. Pure and deterministic. Affinities are SCENARIO placeholders.
 import { POLITICS_SCENARIO } from "../config/scenarios/politics";
 
-export type Tone = "friendly" | "neutral" | "firm" | "hostile";
-export type Topic = "housing" | "lake" | "jobs" | "safety" | "taxes";
+export const TONES = ["friendly", "neutral", "firm", "hostile"] as const;
+export const TOPICS = ["housing", "lake", "jobs", "safety", "taxes"] as const;
+export type Tone = (typeof TONES)[number];
+export type Topic = (typeof TOPICS)[number];
+/** Who labelled the post: the AI classifier, or the player's buttons when the classifier is unavailable. */
+export type LabelSource = "ai" | "player";
 export type Group = keyof typeof POLITICS_SCENARIO.interestGroups;
 
 export interface Post {
@@ -13,6 +17,7 @@ export interface Post {
   text: string;
   tone: Tone;
   topic: Topic;
+  labelSource: LabelSource;
   /** Sentiment change per group, applied when the post lands. */
   impact: Record<Group, number>;
   reach: number;
@@ -45,13 +50,14 @@ export function createSocial(): SocialState {
 }
 
 /** Publishes a post. Reach grows with the author's reputation and falls for hostile tone. */
-export function publish(s: SocialState, input: { day: number; text: string; tone: Tone; topic: Topic; reputation: number }): SocialState {
+export function publish(s: SocialState, input: { day: number; text: string; tone: Tone; topic: Topic; reputation: number; labelSource?: LabelSource }): SocialState {
   if (input.text.trim().length === 0) throw new RangeError("a post needs text");
   const reach = Math.round((50 + input.reputation * 4) * (input.tone === "hostile" ? 0.7 : 1));
   const impact = Object.fromEntries(
     GROUPS.map((g) => [g, round3(AFFINITY[input.topic][g] * TONE_FACTOR[input.tone] * 0.1)]),
   ) as Record<Group, number>;
-  const post: Post = { id: s.posts.length + 1, day: input.day, text: input.text.trim(), tone: input.tone, topic: input.topic, impact, reach };
+  const labelSource = input.labelSource ?? "player";
+  const post: Post = { id: s.posts.length + 1, day: input.day, text: input.text.trim(), tone: input.tone, topic: input.topic, labelSource, impact, reach };
   const sentiment = { ...s.sentiment };
   for (const g of GROUPS) sentiment[g] = clamp(sentiment[g] + impact[g], 0, 1);
   return {
@@ -59,7 +65,7 @@ export function publish(s: SocialState, input: { day: number; text: string; tone
     sentiment,
     log: [
       ...s.log,
-      { day: input.day, kind: "post", detail: { id: post.id, topic: input.topic, tone: input.tone, reach } },
+      { day: input.day, kind: "post", detail: { id: post.id, topic: input.topic, tone: input.tone, labelSource, reach } },
       ...GROUPS.map((g) => ({ day: input.day, kind: "sentiment" as const, detail: { group: g, change: impact[g] } })),
     ],
   };

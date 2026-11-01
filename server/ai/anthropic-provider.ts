@@ -6,6 +6,7 @@ export const MODELS = {
   intent: "claude-haiku-5-5",
   dialogue: "claude-sonnet-5-5",
   check: "claude-haiku-5-5",
+  classify: "claude-haiku-5-5",
 } as const;
 
 const ENDPOINT = "https://api.anthropic.com/v1/messages";

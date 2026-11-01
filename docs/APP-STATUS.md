@@ -21,7 +21,9 @@
 - Also built: elections (Phase 8, scenario): campaign blocks build strength, the term clock runs on sleep, the result follows sentiment and strength plus one seeded roll, and the odds are shown as a probability.
 - Also built: the four game modes (Life, Builder, Politics, Spectator) as flags in src/config/modes.ts, chosen on the menu and shown on the Life screen. Mode flags do not yet change what the screens allow; that wiring is next.
 - Also built: City Hall in 3D, advisors, public comment, recall (sourced threshold, TUNABLE), voice input (browser speech), press interviews, the desktop app (Tauri, macOS DMG, unsigned), and the wider map with buyable and designatable parcels.
-- Not built: the AI tone classifier and the Gemini budget alert (with Cowork).
+- AI tone classifier: built. POST /api/classify labels a post's tone and topic (Gemini flash-lite, Zod-checked, same rate limiter as /api/talk); the sim still sets reach and sentiment. The Feed falls back to the player's buttons when the classifier is unavailable and each post shows which one labelled it.
+- Known failing test (pre-existing, not from the classifier): e2e/map.spec.ts "full city map renders with HUD and no page errors" times out at the 30s test limit while it waits up to 90s for the WebGL canvas. It fails on c0a76b8 too. Not yet diagnosed.
+- Gemini budget alert: not needed. GEMINI_API_KEY belongs to the SmartGrow project (gen-lang-client-0079733541), which is on the free tier with no billing account, so it cannot incur charges. If billing is ever added, set a budget with a spend cap on the Gemini API first.
 - Budget and politics values are SCENARIO placeholders (D-019). Real rules come from the Phase 5.5 research, which is not done.
 - Repo: https://github.com/tgustafson75-sketch/mayor-of-the-lake (public). Static site: https://mayorofthelake.vercel.app.
 - The game server is not public. Deploying it means putting the Gemini key behind an endpoint, which needs rate limits first.

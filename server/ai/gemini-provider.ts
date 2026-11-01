@@ -6,6 +6,7 @@ export const GEMINI_MODELS = {
   intent: "gemini-3.5-flash-lite", // cheap, fast, fine for JSON intents
   dialogue: "gemini-3.5-flash",
   check: "gemini-3.5-flash-lite",
+  classify: "gemini-3.5-flash-lite",
 } as const;
 
 const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";

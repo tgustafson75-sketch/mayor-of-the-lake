@@ -7,6 +7,7 @@ import { Rng } from "../src/sim/rng";
 import { whip } from "../src/sim/council";
 import { POLITICS_SCENARIO } from "../src/config/scenarios/politics";
 import type { Limiter } from "./rate-limit";
+import { classifyPost } from "./classify";
 
 export interface SessionStore {
   /** Trust toward Tim per council member. In-memory: resets when the server restarts. */
@@ -35,16 +36,27 @@ const VOICE = "Measured, plain-spoken, careful with commitments. Fictional counc
 
 export function createApp(deps: AppDeps) {
   const app = new Hono();
+  const checkLimit = (forwardedFor: string | undefined) =>
+    deps.limiter ? deps.limiter.check(forwardedFor?.split(",")[0].trim() ?? "local") : null;
 
   app.get("/health", (c) => c.json({ ok: true, ai: deps.provider.name }));
 
+  /** Labels a post's tone and topic. Same limiter as /api/talk: both spend the Gemini key. */
+  app.post("/api/classify", async (c) => {
+    const refused = checkLimit(c.req.header("x-forwarded-for"));
+    if (refused) return c.json({ error: refused }, 429);
+    const body = (await c.req.json().catch(() => null)) as { text?: string } | null;
+    const text = body?.text?.trim();
+    if (!text) return c.json({ error: "text is required" }, 400);
+    const label = await classifyPost(deps.provider, text).catch(() => null);
+    if (!label) return c.json({ error: "the classifier could not label this post" }, 502);
+    return c.json(label);
+  });
+
   /** One conversation turn: words -> intent -> sim outcome -> reply. The model never sets the outcome. */
   app.post("/api/talk", async (c) => {
-    if (deps.limiter) {
-      const ip = c.req.header("x-forwarded-for")?.split(",")[0].trim() ?? "local";
-      const refused = deps.limiter.check(ip);
-      if (refused) return c.json({ error: refused }, 429);
-    }
+    const refused = checkLimit(c.req.header("x-forwarded-for"));
+    if (refused) return c.json({ error: refused }, 429);
     const body = (await c.req.json().catch(() => null)) as { npcId?: string; text?: string } | null;
     if (!body?.npcId || !body.text) return c.json({ error: "npcId and text are required" }, 400);
     const name = NPC_NAMES[body.npcId];

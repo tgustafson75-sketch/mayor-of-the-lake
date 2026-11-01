@@ -54,4 +54,15 @@ describe("social feed: NPCs quote past posts accurately", () => {
   it("returns null rather than inventing a quote when there is none", () => {
     expect(quoteBack(createSocial(), "taxes", 100)).toBeNull();
   });
+
+  it("records who labelled the post, and the label source never changes the sim's numbers", () => {
+    const input = { ...base, text: "x", tone: "firm" as const, topic: "jobs" as const };
+    const byAi = publish(createSocial(), { ...input, labelSource: "ai" });
+    const byPlayer = publish(createSocial(), input);
+    expect(byAi.posts[0].labelSource).toBe("ai");
+    expect(byPlayer.posts[0].labelSource).toBe("player");
+    expect(byAi.posts[0].impact).toEqual(byPlayer.posts[0].impact);
+    expect(byAi.posts[0].reach).toBe(byPlayer.posts[0].reach);
+    expect(byAi.sentiment).toEqual(byPlayer.sentiment);
+  });
 });

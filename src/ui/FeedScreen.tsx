@@ -1,12 +1,31 @@
 // Social feed: write a post, see its reach, and watch each interest group's sentiment.
-// The sim computes every number. The tone is the player's choice until the AI classifier lands.
+// The sim computes every number. The AI classifier labels tone and topic; when it is
+// unavailable, the player's buttons are used, and each post says which one labelled it.
 import { useState } from "react";
-import { AFFINITY, type Group, type Tone, type Topic } from "../sim/social";
+import { TONES, TOPICS, type Group, type LabelSource, type Tone, type Topic } from "../sim/social";
 import { useGame } from "./gameStore";
 import { Screen } from "./Screen";
 
-const TONES: Tone[] = ["friendly", "neutral", "firm", "hostile"];
-const TOPICS = Object.keys(AFFINITY) as Topic[];
+const LABEL_SOURCE: Record<LabelSource, string> = { ai: "labelled by AI", player: "labelled by you" };
+
+/** Asks the server to label the post. Null when the classifier is unavailable. */
+async function classify(text: string): Promise<{ tone: Tone; topic: Topic } | null> {
+  try {
+    const base = import.meta.env.VITE_API_BASE ?? "";
+    const res = await fetch(`${base}/api/classify`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text }),
+    });
+    if (!res.ok) return null;
+    const body = (await res.json()) as { tone?: string; topic?: string };
+    const tone = TONES.find((t) => t === body.tone);
+    const topic = TOPICS.find((t) => t === body.topic);
+    return tone && topic ? { tone, topic } : null;
+  } catch {
+    return null;
+  }
+}
 const GROUP_LABEL: Record<Group, string> = {
   homeowners: "Homeowners",
   renters: "Renters",
@@ -25,18 +44,23 @@ export function FeedScreen() {
   const [text, setText] = useState("");
   const [tone, setTone] = useState<Tone>("friendly");
   const [topic, setTopic] = useState<Topic>("lake");
-  const canPost = text.trim().length > 0;
+  const [busy, setBusy] = useState(false);
+  const canPost = text.trim().length > 0 && !busy;
 
   return (
     <Screen title="Feed" subtitle="Posts reach the city; the sim sets reach and sentiment">
       <div className="grid gap-6 md:grid-cols-[1fr_280px]">
         <div>
           <form
-            onSubmit={(e) => {
+            onSubmit={async (e) => {
               e.preventDefault();
               if (!canPost) return;
-              post(text, tone, topic);
+              setBusy(true);
+              const label = await classify(text);
+              if (label) post(text, label.tone, label.topic, "ai");
+              else post(text, tone, topic, "player");
               setText("");
+              setBusy(false);
             }}
             className="rounded-xl border border-white/10 bg-[#1b1e24] p-5 shadow-lg shadow-black/30"
           >
@@ -52,7 +76,8 @@ export function FeedScreen() {
                 <Chip key={t} active={tone === t} onClick={() => setTone(t)}>{t}</Chip>
               ))}
             </div>
-            <button type="submit" disabled={!canPost} className="mt-4 rounded-md bg-[#F4C430] px-4 py-2 font-display uppercase tracking-wider text-[#14161A] disabled:opacity-40">Publish</button>
+            <p className="mt-2 text-xs text-stone-400">The AI labels tone and topic. Your picks are used if it is unavailable.</p>
+            <button type="submit" disabled={!canPost} className="mt-4 rounded-md bg-[#F4C430] px-4 py-2 font-display uppercase tracking-wider text-[#14161A] disabled:opacity-40">{busy ? "Publishing…" : "Publish"}</button>
           </form>
 
           <section aria-label="Press" className="mt-6 rounded-xl border border-white/10 bg-[#1b1e24] p-5 shadow-lg shadow-black/30">
@@ -78,7 +103,7 @@ export function FeedScreen() {
             {[...social.posts].reverse().map((p) => (
               <li key={p.id} className="rounded-xl border border-white/10 bg-[#1b1e24] p-5 shadow-lg shadow-black/30">
                 <p>{p.text}</p>
-                <p className="mt-2 text-xs text-stone-400">Day {p.day + 1} · {p.topic} · {p.tone} · reach {p.reach}</p>
+                <p className="mt-2 text-xs text-stone-400">Day {p.day + 1} · {p.topic} · {p.tone} · {LABEL_SOURCE[p.labelSource ?? "player"]} · reach {p.reach}</p>
               </li>
             ))}
           </ul>

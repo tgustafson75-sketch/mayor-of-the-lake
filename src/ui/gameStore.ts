@@ -6,7 +6,7 @@ import { addCommitment, createLedger, settleDay, type Ledger } from "../sim/comm
 import { runVote, whip, type FitTable } from "../sim/council";
 import { Rng } from "../sim/rng";
 import { scenarioRoster } from "../sim/politics";
-import { createSocial, publish, type SocialState, type Tone, type Topic } from "../sim/social";
+import { createSocial, publish, type LabelSource, type SocialState, type Tone, type Topic } from "../sim/social";
 import { answerInterview, openInterview, type Answer, type Interview } from "../sim/press";
 import { addCampaignWork, createCampaign, tickCampaign, type Campaign, type ElectionResult } from "../sim/election";
 
@@ -35,7 +35,7 @@ export interface GameStore {
   whipMember: (id: string) => void;
   promise: (npcId: string, text: string, dueDays: number) => void;
   social: SocialState;
-  post: (text: string, tone: Tone, topic: Topic) => void;
+  post: (text: string, tone: Tone, topic: Topic, labelSource?: LabelSource) => void;
   interview: Interview | null;
   askReporter: (topic: Topic) => void;
   answerReporter: (answer: Answer) => void;
@@ -66,10 +66,10 @@ export const useGame = create<GameStore>((set, get) => ({
   },
   campaign: createCampaign(),
   lastElection: null,
-  post: (text, tone, topic) => {
+  post: (text, tone, topic, labelSource) => {
     const { life, social } = get();
     try {
-      set({ social: publish(social, { day: life.day, text, tone, topic, reputation: life.reputation }) });
+      set({ social: publish(social, { day: life.day, text, tone, topic, reputation: life.reputation, labelSource }) });
     } catch {
       // Empty text: the composer disables Publish, so this is only a guard.
     }

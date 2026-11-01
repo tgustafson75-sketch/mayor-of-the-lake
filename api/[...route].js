@@ -21732,6 +21732,20 @@ function whip(trust, memberId, outcome) {
   return { ...trust, [memberId]: Math.min(1, Math.max(-1, cur + delta)) };
 }
 
+// src/sim/social.ts
+var TONES = ["friendly", "neutral", "firm", "hostile"];
+var TOPICS = ["housing", "lake", "jobs", "safety", "taxes"];
+var GROUPS = Object.keys(POLITICS_SCENARIO.interestGroups);
+
+// server/classify.ts
+var PostLabel = external_exports.object({ tone: external_exports.enum(TONES), topic: external_exports.enum(TOPICS) });
+var SYSTEM = `Label a city mayor's social media post. Reply with JSON only, no code fence, no prose: {"tone": one of ${JSON.stringify(TONES)}, "topic": one of ${JSON.stringify(TOPICS)}}. Pick the closest topic.`;
+async function classifyPost(provider, text) {
+  const res = await provider.complete({ task: "classify:post", system: SYSTEM, user: text });
+  const checked = PostLabel.safeParse(safeJson(res.text));
+  return checked.success ? checked.data : null;
+}
+
 // server/app.ts
 function createSessionStore(seed = "lake-elsinore") {
   return { trust: {}, talks: 0, seed };
@@ -21743,13 +21757,21 @@ for (let i = 1; i <= POLITICS_SCENARIO.councilSeats + 1; i++) {
 var VOICE = "Measured, plain-spoken, careful with commitments. Fictional council member.";
 function createApp(deps) {
   const app2 = new Hono3();
+  const checkLimit = (forwardedFor) => deps.limiter ? deps.limiter.check(forwardedFor?.split(",")[0].trim() ?? "local") : null;
   app2.get("/health", (c) => c.json({ ok: true, ai: deps.provider.name }));
+  app2.post("/api/classify", async (c) => {
+    const refused = checkLimit(c.req.header("x-forwarded-for"));
+    if (refused) return c.json({ error: refused }, 429);
+    const body = await c.req.json().catch(() => null);
+    const text = body?.text?.trim();
+    if (!text) return c.json({ error: "text is required" }, 400);
+    const label = await classifyPost(deps.provider, text).catch(() => null);
+    if (!label) return c.json({ error: "the classifier could not label this post" }, 502);
+    return c.json(label);
+  });
   app2.post("/api/talk", async (c) => {
-    if (deps.limiter) {
-      const ip = c.req.header("x-forwarded-for")?.split(",")[0].trim() ?? "local";
-      const refused = deps.limiter.check(ip);
-      if (refused) return c.json({ error: refused }, 429);
-    }
+    const refused = checkLimit(c.req.header("x-forwarded-for"));
+    if (refused) return c.json({ error: refused }, 429);
     const body = await c.req.json().catch(() => null);
     if (!body?.npcId || !body.text) return c.json({ error: "npcId and text are required" }, 400);
     const name = NPC_NAMES[body.npcId];
@@ -21781,7 +21803,8 @@ var GEMINI_MODELS = {
   intent: "gemini-3.5-flash-lite",
   // cheap, fast, fine for JSON intents
   dialogue: "gemini-3.5-flash",
-  check: "gemini-3.5-flash-lite"
+  check: "gemini-3.5-flash-lite",
+  classify: "gemini-3.5-flash-lite"
 };
 var ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
 function modelFor(task) {
