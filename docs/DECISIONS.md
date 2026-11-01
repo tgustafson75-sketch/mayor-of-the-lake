@@ -43,3 +43,9 @@ Tim chose "close realistic 3D" over the spec's stylized low-poly. Target: real-t
 - Geometry is projected to local metres (equirectangular at the city centre). This is accurate to a few metres across the 19 km box.
 - The DEM row order is north-first. Terrain indices are counter-clockwise from above. Terrain under water is carved down to the lake bed.
 - Display-only constants (vertical exaggeration 2x, lake-bed depth 4 m, default building height 7 m, road widths) are marked TUNABLE in code. None of them feed the sim.
+
+## D-014 Front page and HUD palette (2026-11-01)
+Charcoal (#14161A family) with gold accent (#F4C430), taken from the Gridiron Life style guide so the two games read as one family. The front page is the main menu over a slowly orbiting city. #map opens the full HUD. The HUD shows only sourced values (population from CA DOF). Sim values (budget, year, jobs, ratings) are blank until their phases.
+
+## D-015 Deployment (2026-11-01)
+Static Vite build deployed to Vercel project `mayorofthelake`: https://mayorofthelake.vercel.app. The server/ proxy is not deployed yet (no AI until Phase 4). Re-deploy with `vercel deploy --prod --yes --name mayorofthelake`.

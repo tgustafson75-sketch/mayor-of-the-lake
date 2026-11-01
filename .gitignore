@@ -8,3 +8,4 @@ playwright-report/
 !.env.example
 server/.env
 data/raw/
+.vercel

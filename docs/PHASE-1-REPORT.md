@@ -33,3 +33,9 @@ Raw downloads are in data/raw/ (gitignored). Reproduce with `scripts/data/fetch.
 ## Needed from Tim
 - Census API key (free) in server/.env as CENSUS_API_KEY.
 - Confirm "both" in the visual request: does it include Gridiron Life? Its own style guide says "not photoreal," so the two would differ.
+
+## Update: realistic pass and deploy (2026-11-01)
+- Live: https://mayorofthelake.vercel.app (front page orbits the city; #map opens the full view with the HUD).
+- Added: roof/wall split with per-building tints, procedural window facades, about 10k trees along roads and on the valley floor (seeded), slope-based ground colour, a dark tile skirt, image-based light from a built-in room, a lake-focused camera.
+- Tests: 36 unit, 3 browser. Build passes.
+- Still short of "elite": the shoreline is stepped because the DEM is 35 m per sample; the look is a clean stylised-real model, not the photoreal target; the map chunk is 2.9 MB (map data plus three.js); there is no street-level camera yet; no Lake/Budget/Council panels beyond placeholders.
