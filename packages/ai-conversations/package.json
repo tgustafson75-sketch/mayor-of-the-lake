@@ -1,0 +1,9 @@
+{
+  "name": "@mayor/ai-conversations",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared AI conversation layer (intent parse -> sim resolve -> dialogue -> memory). Copied unchanged into Gridiron Life.",
+  "main": "src/index.ts",
+  "types": "src/index.ts"
+}
