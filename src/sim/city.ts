@@ -130,3 +130,10 @@ export function advanceDays(city: CityState, n: number): CityState {
 function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
+
+/** Advances whole days until the next monthly loop tick. Used by "skip to next event". */
+export function advanceToNextMonth(city: CityState): CityState {
+  let s = advanceDay(city);
+  while (!ticksFor(s.calendar.day).monthly) s = advanceDay(s);
+  return s;
+}

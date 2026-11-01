@@ -1,6 +1,7 @@
 // HUD over the full map. Only sourced values are shown. Anything the sim will
 // own (budget, year, jobs, ratings) is absent until its phase lands.
 import { POPULATION_2025 } from "../config/realworld";
+import { TimeControls } from "./TimeControls";
 
 const NAV = [
   { label: "Build", phase: 2 },
@@ -22,7 +23,6 @@ export function MapHud() {
         </div>
         <div className="ml-auto flex gap-8 text-right">
           <Stat label="Population (2025)" value={POPULATION_2025.toLocaleString("en-US")} />
-          <Stat label="Year" value="—" hint="sim not built yet" />
           <Stat label="Phase" value="1 · real map" />
         </div>
       </header>
@@ -40,6 +40,10 @@ export function MapHud() {
           </button>
         ))}
       </nav>
+
+      <div className="pointer-events-auto absolute bottom-14 right-4 rounded-xl border border-white/10 bg-stone-950/80 px-3 py-2 backdrop-blur">
+        <TimeControls />
+      </div>
 
       <footer className="pointer-events-auto absolute bottom-3 left-1/2 -translate-x-1/2 rounded-md bg-stone-950/70 px-3 py-1 text-[11px] text-stone-300">
         Map data © OpenStreetMap contributors (ODbL) · Elevation USGS 3DEP · Population CA Dept. of Finance
