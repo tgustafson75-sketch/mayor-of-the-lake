@@ -2,8 +2,10 @@
 // does lighting, materials, props and the camera. Nothing here touches sim state.
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import * as THREE from "three";
-import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls, Sky, useTexture } from "@react-three/drei";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { CAMERA_PRESETS, type CameraPreset } from "../config/cameras";
+import { useCamera } from "../ui/cameraStore";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import {
   type MapData,
@@ -229,6 +231,38 @@ function MapMeshes({ map }: { map: MapData }) {
   );
 }
 
+/**
+ * Glides the camera and orbit target to the chosen preset. "free" leaves the
+ * camera where the user put it. View only: no sim state is read or written.
+ */
+function CameraRig({ focus }: { focus: { x: number; y: number; z: number } }) {
+  const preset = useCamera((s) => s.preset);
+  const camera = useThree((s) => s.camera);
+  const controls = useThree((s) => s.controls) as unknown as { target: THREE.Vector3; update: () => void } | null;
+  const goalPos = useRef(new THREE.Vector3());
+  const goalTarget = useRef(new THREE.Vector3());
+  const animating = useRef(false);
+
+  useEffect(() => {
+    const p: CameraPreset = CAMERA_PRESETS.find((c) => c.id === preset)!;
+    if (p.id === "free") return;
+    goalPos.current.set(focus.x + p.offset[0], focus.y * VERTICAL_EXAGGERATION + p.offset[1], focus.z + p.offset[2]);
+    goalTarget.current.set(focus.x + p.target[0], focus.y * VERTICAL_EXAGGERATION + p.target[1], focus.z + p.target[2]);
+    animating.current = true;
+  }, [preset, focus]);
+
+  useFrame(() => {
+    if (!animating.current) return;
+    camera.position.lerp(goalPos.current, 0.08);
+    if (controls) {
+      controls.target.lerp(goalTarget.current, 0.08);
+      controls.update();
+    }
+    if (camera.position.distanceTo(goalPos.current) < 2) animating.current = false;
+  });
+  return null;
+}
+
 export default function MapScene({ mode }: { mode: MapMode }) {
   const map = useMapData();
   const focus = useMemo(() => lakeCentre(map), [map]);
@@ -251,7 +285,9 @@ export default function MapScene({ mode }: { mode: MapMode }) {
       <Lighting />
       <ImageBasedLight />
       <MapMeshes map={map} />
+      {full && <CameraRig focus={focus} />}
       <OrbitControls
+        makeDefault
         target={target}
         autoRotate={!full}
         autoRotateSpeed={0.35}

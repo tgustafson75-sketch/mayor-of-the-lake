@@ -12,6 +12,18 @@ test("full city map renders with HUD and no page errors", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
+test("camera presets switch live without errors", async ({ page }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (e) => errors.push(e.message));
+  await page.goto("/#map");
+  await expect(page.locator("canvas")).toBeVisible({ timeout: 90_000 });
+  for (const name of ["Street", "Lake", "Planner", "Free", "City"]) {
+    await page.getByRole("button", { name, exact: true }).click();
+    await expect(page.getByRole("button", { name, exact: true })).toHaveAttribute("aria-pressed", "true");
+  }
+  expect(errors).toEqual([]);
+});
+
 test("front page shows the photoreal hero behind the menu", async ({ page }) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));

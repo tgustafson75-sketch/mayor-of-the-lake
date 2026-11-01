@@ -1,6 +1,7 @@
 // HUD over the full map. Only sourced values are shown. Anything the sim will
 // own (budget, year, jobs, ratings) is absent until its phase lands.
 import { POPULATION_2025 } from "../config/realworld";
+import { CameraSwitcher } from "./CameraSwitcher";
 import { TimeControls } from "./TimeControls";
 
 const NAV = [
@@ -41,7 +42,8 @@ export function MapHud() {
         ))}
       </nav>
 
-      <div className="pointer-events-auto absolute bottom-14 right-4 rounded-xl border border-white/10 bg-stone-950/80 px-3 py-2 backdrop-blur">
+      <div className="pointer-events-auto absolute bottom-14 right-4 flex flex-col gap-2 rounded-xl border border-white/10 bg-stone-950/80 px-3 py-2 backdrop-blur">
+        <CameraSwitcher />
         <TimeControls />
       </div>
 
