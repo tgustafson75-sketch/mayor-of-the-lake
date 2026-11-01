@@ -9,3 +9,5 @@ playwright-report/
 server/.env
 data/raw/
 .vercel
+src-tauri/target/
+src-tauri/gen/

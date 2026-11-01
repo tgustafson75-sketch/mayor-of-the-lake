@@ -19,6 +19,9 @@ const GROUP_LABEL: Record<Group, string> = {
 export function FeedScreen() {
   const social = useGame((s) => s.social);
   const post = useGame((s) => s.post);
+  const interview = useGame((s) => s.interview);
+  const askReporter = useGame((s) => s.askReporter);
+  const answerReporter = useGame((s) => s.answerReporter);
   const [text, setText] = useState("");
   const [tone, setTone] = useState<Tone>("friendly");
   const [topic, setTopic] = useState<Topic>("lake");
@@ -51,6 +54,25 @@ export function FeedScreen() {
             </div>
             <button type="submit" disabled={!canPost} className="mt-4 rounded-md bg-[#F4C430] px-4 py-2 font-display uppercase tracking-wider text-[#14161A] disabled:opacity-40">Publish</button>
           </form>
+
+          <section aria-label="Press" className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
+            <h2 className="font-display text-sm uppercase tracking-wider text-[#F4C430]">Press</h2>
+            {interview ? (
+              <div className="mt-2">
+                <p className="text-sm">{interview.question}</p>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button type="button" onClick={() => answerReporter("stand_by")} className="rounded-md bg-[#F4C430] px-3 py-1.5 text-sm font-semibold text-[#14161A]">I stand by it</button>
+                  <button type="button" onClick={() => answerReporter("changed_mind")} className="rounded-md border border-white/15 px-3 py-1.5 text-sm hover:bg-white/10">I've changed my mind</button>
+                  <button type="button" onClick={() => answerReporter("deflect")} className="rounded-md border border-white/15 px-3 py-1.5 text-sm hover:bg-white/10">No comment</button>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-2 flex items-center gap-3">
+                <p className="text-sm text-stone-300">A reporter can ask about a topic you have posted on.</p>
+                <button type="button" onClick={() => askReporter(topic)} className="rounded-md border border-white/15 px-3 py-1.5 text-sm hover:bg-white/10">Take the reporter's question ({topic})</button>
+              </div>
+            )}
+          </section>
 
           <ul className="mt-6 space-y-3">
             {[...social.posts].reverse().map((p) => (

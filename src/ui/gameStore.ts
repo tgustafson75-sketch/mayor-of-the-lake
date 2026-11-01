@@ -7,6 +7,7 @@ import { runVote, whip, type FitTable } from "../sim/council";
 import { Rng } from "../sim/rng";
 import { scenarioRoster } from "../sim/politics";
 import { createSocial, publish, type SocialState, type Tone, type Topic } from "../sim/social";
+import { answerInterview, openInterview, type Answer, type Interview } from "../sim/press";
 import { addCampaignWork, createCampaign, tickCampaign, type Campaign, type ElectionResult } from "../sim/election";
 
 export const COUNCIL_IDS = scenarioRoster().map((m) => m.id);
@@ -35,6 +36,9 @@ export interface GameStore {
   promise: (npcId: string, text: string, dueDays: number) => void;
   social: SocialState;
   post: (text: string, tone: Tone, topic: Topic) => void;
+  interview: Interview | null;
+  askReporter: (topic: Topic) => void;
+  answerReporter: (answer: Answer) => void;
   campaign: Campaign;
   lastElection: (ElectionResult & { day: number }) | null;
 }
@@ -45,6 +49,21 @@ export const useGame = create<GameStore>((set, get) => ({
   ledger: createLedger(),
   votes: [],
   social: createSocial(),
+  interview: null,
+  askReporter: (topic) => {
+    const { social, life } = get();
+    set({ interview: openInterview(social, topic, life.day) });
+  },
+  answerReporter: (answer) => {
+    const { social, interview, life } = get();
+    if (!interview) return;
+    const res = answerInterview(social, interview, answer);
+    set({
+      social: { ...social, sentiment: res.sentiment, log: [...social.log, ...res.log] },
+      life: { ...life, reputation: Math.max(0, Math.min(100, life.reputation + res.reputationDelta)) },
+      interview: null,
+    });
+  },
   campaign: createCampaign(),
   lastElection: null,
   post: (text, tone, topic) => {

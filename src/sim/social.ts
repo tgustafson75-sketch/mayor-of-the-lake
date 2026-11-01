@@ -21,7 +21,7 @@ export interface Post {
 export interface SocialState {
   posts: Post[];
   sentiment: Record<Group, number>;
-  log: { day: number; kind: "post" | "sentiment"; detail: Record<string, string | number> }[];
+  log: { day: number; kind: "post" | "sentiment" | "interview"; detail: Record<string, string | number> }[];
 }
 
 /** How much each group cares about each topic, -1 (opposed) .. 1 (in favour). SCENARIO placeholder. */

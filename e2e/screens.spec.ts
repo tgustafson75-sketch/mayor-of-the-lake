@@ -68,3 +68,21 @@ test("City Hall opens in 3D and links into the council chamber and home", async 
   await expect(page.getByText("Council chamber", { exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });
+
+test("council talk has a speak button: it listens where voice works, and says so where it does not", async ({ page }) => {
+  await page.goto("/#map");
+  const speak = page.getByRole("button", { name: "Speak your message" });
+  await speak.click({ timeout: 90_000 });
+  // Supported browsers switch to listening; others show the plain message.
+  await expect(page.getByRole("button", { name: "Stop listening" }).or(page.getByRole("status"))).toBeVisible({ timeout: 10000 });
+});
+
+test("the press asks about your post and your answer is recorded", async ({ page }) => {
+  await page.goto("/#feed");
+  await page.getByLabel("Your post").fill("Lake clean-up starts Monday");
+  await page.getByRole("button", { name: "Publish" }).click();
+  await page.getByRole("button", { name: /Take the reporter's question/ }).click();
+  await expect(page.getByText(/Do you still stand by that/)).toBeVisible();
+  await page.getByRole("button", { name: "I stand by it" }).click();
+  await expect(page.getByRole("button", { name: /Take the reporter's question/ })).toBeVisible();
+});
