@@ -33,3 +33,15 @@ test("council talk panel is on the map and reports a missing server clearly", as
   await expect(page.getByRole("alert")).toBeVisible({ timeout: 15_000 });
   expect(errors).toEqual([]);
 });
+
+test("the map extends past the city and a parcel can be selected", async ({ page }) => {
+  await page.goto("/#map");
+  await expect(page.getByRole("toolbar", { name: "Map tools" }).or(page.getByRole("region", { name: "Talk to council" })).first()).toBeVisible({ timeout: 90_000 });
+  await expect(page.locator("canvas")).toBeVisible();
+  await page.waitForTimeout(12000); // let the terrain load before clicking
+  // Raw mouse clicks on the terrain (the HUD sits over the corners, so no locator actionability check).
+  await page.mouse.click(640, 420);
+  await page.waitForTimeout(500);
+  await page.mouse.click(520, 430);
+  await expect(page.getByRole("region", { name: "Selected parcel" })).toBeVisible({ timeout: 10000 });
+});

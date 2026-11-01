@@ -40,14 +40,14 @@ test("campaigning raises strength and the shown odds, and the election clock is 
   await page.getByRole("button", { name: "Campaign", exact: true }).click();
   const strengthAfter = await page.getByLabel("Election").innerText();
   expect(strengthAfter).not.toBe(strengthBefore);
-  expect(strengthAfter).toMatch(/campaign strength [1-9]\d*/);
+  expect(strengthAfter).toMatch(/campaign strength [1-9]\d*/i);
 });
 
 test("the chosen game mode carries from the menu to the Life screen", async ({ page }) => {
   await page.goto("/");
   await page.getByLabel("Builder").check({ force: true });
   await page.getByRole("link", { name: "New Life" }).click();
-  await expect(page.getByText("Builder mode")).toBeVisible();
+  await expect(page.getByText(/Builder · day/)).toBeVisible();
 });
 
 test("the council chamber shows advisors and public comment", async ({ page }) => {

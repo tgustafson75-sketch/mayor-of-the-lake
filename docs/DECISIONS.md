@@ -61,3 +61,7 @@ Zones are generic types. Growth is a monthly pull toward a target (the lower of 
 
 ## D-019 Near-world SCENARIO budget and politics (2026-11-01, Tim's direction)
 Tim asked for near-world scenarios now and exact values later. src/config/scenarios/ holds the budget and council placeholders, each labelled SCENARIO. None is sourced or shown in-game as fact. The budget and politics sims run on them and are tested. Exact values come from the research step, which will replace the scenario files.
+
+## D-020 Map covers a wider region; land beyond the city (2026-11-01, Tim's direction)
+The map now covers a region around the city (33.50 to 33.88 N, 117.60 to 117.05 W, about 51 by 42 km), so the city is not a lone tile. DEM 768x576 from 3DEP; water and main roads from four OSM tiles (merged, de-duplicated by id). The city boundary and the city's buildings are kept separately.
+Land beyond the city is divided into one-kilometre parcels. Parcels inside the city belong to the city. Outside parcels can be bought and designated (open space, future town site, commercial, industrial, residential). Prices and funds are SCENARIO values (TUNABLE), not sourced market prices. Future town sites are game designations, not claims about real towns.

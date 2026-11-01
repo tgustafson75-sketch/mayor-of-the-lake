@@ -38,7 +38,7 @@ export function FeedScreen() {
               post(text, tone, topic);
               setText("");
             }}
-            className="rounded-xl border border-white/10 bg-white/5 p-4"
+            className="rounded-xl border border-white/10 bg-[#1b1e24] p-5 shadow-lg shadow-black/30"
           >
             <label className="font-display text-sm uppercase tracking-wider text-stone-300" htmlFor="post-text">Your post</label>
             <textarea id="post-text" value={text} onChange={(e) => setText(e.target.value)} rows={3} className="mt-2 w-full rounded-md bg-[#14161A] px-3 py-2 text-[#E8E6E1]" placeholder="Say something to the city" />
@@ -55,7 +55,7 @@ export function FeedScreen() {
             <button type="submit" disabled={!canPost} className="mt-4 rounded-md bg-[#F4C430] px-4 py-2 font-display uppercase tracking-wider text-[#14161A] disabled:opacity-40">Publish</button>
           </form>
 
-          <section aria-label="Press" className="mt-6 rounded-xl border border-white/10 bg-white/5 p-4">
+          <section aria-label="Press" className="mt-6 rounded-xl border border-white/10 bg-[#1b1e24] p-5 shadow-lg shadow-black/30">
             <h2 className="font-display text-sm uppercase tracking-wider text-[#F4C430]">Press</h2>
             {interview ? (
               <div className="mt-2">
@@ -76,7 +76,7 @@ export function FeedScreen() {
 
           <ul className="mt-6 space-y-3">
             {[...social.posts].reverse().map((p) => (
-              <li key={p.id} className="rounded-xl border border-white/10 bg-white/5 p-4">
+              <li key={p.id} className="rounded-xl border border-white/10 bg-[#1b1e24] p-5 shadow-lg shadow-black/30">
                 <p>{p.text}</p>
                 <p className="mt-2 text-xs text-stone-400">Day {p.day + 1} · {p.topic} · {p.tone} · reach {p.reach}</p>
               </li>
@@ -85,7 +85,7 @@ export function FeedScreen() {
           {social.posts.length === 0 && <p className="mt-6 text-sm text-stone-400">No posts yet.</p>}
         </div>
 
-        <aside className="rounded-xl border border-white/10 bg-white/5 p-4">
+        <aside className="rounded-xl border border-white/10 bg-[#1b1e24] p-5 shadow-lg shadow-black/30">
           <h2 className="font-display text-sm uppercase tracking-wider text-[#F4C430]">Sentiment by group</h2>
           <ul className="mt-3 space-y-3">
             {(Object.keys(social.sentiment) as Group[]).map((g) => (

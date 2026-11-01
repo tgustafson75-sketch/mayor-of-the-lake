@@ -21,13 +21,15 @@ describe("processed map data", () => {
     expect(map.elevationM).toHaveLength(W * H);
   });
 
-  it("extent is symmetric about the city centre and roughly 19 km x 15 km", () => {
-    expect(minX).toBeCloseTo(-maxX, 0);
-    expect(minZ).toBeCloseTo(-maxZ, 0);
-    expect((maxX - minX) / 1000).toBeGreaterThan(18);
-    expect((maxX - minX) / 1000).toBeLessThan(20);
-    expect((maxZ - minZ) / 1000).toBeGreaterThan(14);
-    expect((maxZ - minZ) / 1000).toBeLessThan(16);
+  it("the map covers the wider region, around the city", () => {
+    const span = (maxX - minX) / 1000;
+    const height = (maxZ - minZ) / 1000;
+    expect(span).toBeGreaterThan(45);
+    expect(span).toBeLessThan(55);
+    expect(height).toBeGreaterThan(38);
+    expect(height).toBeLessThan(46);
+    expect(map.meta.city.extentM.minX).toBeGreaterThan(minX);
+    expect(map.meta.city.extentM.maxX).toBeLessThan(maxX);
   });
 });
 
@@ -148,12 +150,13 @@ describe("terrain colour", () => {
 });
 
 describe("lakeCentre", () => {
-  it("sits inside the city extent, on the lake", () => {
+  it("sits inside the map, on the lake, near the city centre", () => {
     const c = lakeCentre(map);
     expect(c.x).toBeGreaterThan(minX);
     expect(c.x).toBeLessThan(maxX);
     expect(c.z).toBeGreaterThan(minZ);
     expect(c.z).toBeLessThan(maxZ);
+    expect(Math.hypot(c.x, c.z)).toBeLessThan(15_000);
   });
 });
 

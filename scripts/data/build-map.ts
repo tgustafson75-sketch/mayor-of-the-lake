@@ -1,6 +1,7 @@
 // Turns data/raw/ into data/processed/lake-elsinore-map.json.
-// Geometry is projected to local metres (equirectangular, origin at the city's
-// bounds centre), so the 3D scene uses x = east, z = north, units = metres.
+// The map covers a region around the city (REGION), so surrounding land can be
+// designated or bought. The city boundary and the city's buildings are kept separately.
+// Geometry is projected to local metres (equirectangular at the city centre); z = north.
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -9,33 +10,40 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const RAW = resolve(ROOT, "data/raw");
 const OUT = resolve(ROOT, "data/processed/lake-elsinore-map.json");
 
-const BOUNDS = { minLat: 33.6185, minLon: -117.42, maxLat: 33.7568, maxLon: -117.2168 };
-const ORIGIN = { lat: (BOUNDS.minLat + BOUNDS.maxLat) / 2, lon: (BOUNDS.minLon + BOUNDS.maxLon) / 2 };
+/** The city itself (OSM relation 11051981 bounds). */
+const CITY = { minLat: 33.6185, minLon: -117.42, maxLat: 33.7568, maxLon: -117.2168 };
+/** The wider region the map covers. Matches the DEM and the regional OSM tiles in fetch.sh. */
+const REGION = { minLat: 33.5, minLon: -117.6, maxLat: 33.88, maxLon: -117.05 };
+const DEM = { width: 768, height: 576 };
+
+const ORIGIN = { lat: (CITY.minLat + CITY.maxLat) / 2, lon: (CITY.minLon + CITY.maxLon) / 2 };
 const METRES_PER_DEG_LAT = 110_540;
 const METRES_PER_DEG_LON = 111_320 * Math.cos((ORIGIN.lat * Math.PI) / 180);
-const DEM = { width: 512, height: 384 };
-// Extent of the bounds box in metres, so the renderer can place the DEM grid.
-const EXTENT_M = {
-  minX: (BOUNDS.minLon - ORIGIN.lon) * METRES_PER_DEG_LON,
-  maxX: (BOUNDS.maxLon - ORIGIN.lon) * METRES_PER_DEG_LON,
-  minZ: (BOUNDS.minLat - ORIGIN.lat) * METRES_PER_DEG_LAT,
-  maxZ: (BOUNDS.maxLat - ORIGIN.lat) * METRES_PER_DEG_LAT,
-};
 
 type LatLon = { lat: number; lon: number };
 type OsmWay = { type: "way"; id: number; tags?: Record<string, string>; geometry: LatLon[] };
 type OsmRel = { type: "relation"; id: number; tags?: Record<string, string>; members: { type: string; role: string; geometry?: LatLon[] }[] };
 type Xz = [number, number];
 
-const project = (p: LatLon): Xz => [
-  round1((p.lon - ORIGIN.lon) * METRES_PER_DEG_LON),
-  round1((p.lat - ORIGIN.lat) * METRES_PER_DEG_LAT),
-];
 const round1 = (n: number) => Math.round(n * 10) / 10;
+const project = (p: LatLon): Xz => [round1((p.lon - ORIGIN.lon) * METRES_PER_DEG_LON), round1((p.lat - ORIGIN.lat) * METRES_PER_DEG_LAT)];
+const extentOf = (b: typeof CITY) => ({
+  minX: round1((b.minLon - ORIGIN.lon) * METRES_PER_DEG_LON),
+  maxX: round1((b.maxLon - ORIGIN.lon) * METRES_PER_DEG_LON),
+  minZ: round1((b.minLat - ORIGIN.lat) * METRES_PER_DEG_LAT),
+  maxZ: round1((b.maxLat - ORIGIN.lat) * METRES_PER_DEG_LAT),
+});
 const elements = (file: string) => JSON.parse(readFileSync(resolve(RAW, file), "utf8")).elements as (OsmWay | OsmRel)[];
 
-// --- elevation -----------------------------------------------------------
-const demBuf = readFileSync(resolve(RAW, "dem.bin"));
+/** Merges OSM tiles, keeping each element once (OSM ids repeat across overlapping tiles). */
+function mergedElements(files: string[]): (OsmWay | OsmRel)[] {
+  const seen = new Map<string, OsmWay | OsmRel>();
+  for (const f of files) for (const el of elements(f)) seen.set(`${el.type}/${el.id}`, el);
+  return [...seen.values()];
+}
+
+// --- elevation over the region ---------------------------------------------
+const demBuf = readFileSync(resolve(RAW, "region-dem.bin"));
 const samples = new Float32Array(demBuf.buffer, demBuf.byteOffset, DEM.width * DEM.height);
 const elevation = Array.from(samples, (v) => (v <= -9000 ? 0 : round1(v)));
 let elevationMin = Infinity;
@@ -46,30 +54,25 @@ for (const v of elevation) {
   if (v > elevationMax) elevationMax = v;
 }
 
-// --- water: lake polygons, rings projected to metres ---------------------
+// --- water and roads over the region (merged tiles) -------------------------
+const regionOsm = mergedElements(["rw-1.json", "rw-2.json", "rw-3.json", "rw-4.json"]);
 const waterRings: Xz[][] = [];
 const waterNames: string[] = [];
-for (const el of elements("osm-water.json")) {
-  if (el.type === "way" && el.geometry?.length > 2) {
+for (const el of regionOsm) {
+  if (el.type === "way" && el.tags?.natural === "water" && el.geometry?.length > 2) {
     waterRings.push(el.geometry.map(project));
-    if (el.tags?.name) waterNames.push(el.tags.name);
-  } else if (el.type === "relation") {
-    for (const m of el.members) if (m.role === "outer" && m.geometry?.length) waterRings.push(m.geometry.map(project));
     if (el.tags?.name) waterNames.push(el.tags.name);
   }
 }
+const roads = regionOsm
+  .filter((el): el is OsmWay => el.type === "way" && !!el.tags?.highway && el.geometry?.length > 1)
+  .map((el) => ({ id: el.id, class: el.tags?.highway ?? "", name: el.tags?.name ?? null, points: el.geometry.map(project) }));
 
-// --- roads: centreline polylines -----------------------------------------
-const roads = (elements("osm-roads.json") as OsmWay[])
-  .filter((el) => el.type === "way" && el.geometry?.length > 1)
-  .map((el) => ({
-    id: el.id,
-    class: el.tags?.highway ?? "",
-    name: el.tags?.name ?? null,
-    points: el.geometry.map(project),
-  }));
-
-// --- buildings: footprints + height where OSM gives one -------------------
+// --- the city: boundary outline and its buildings ----------------------------
+const cityRel = elements("osm-city-boundary.json")[0] as OsmRel;
+const cityOutline: Xz[][] = cityRel.members
+  .filter((m) => m.role === "outer" && m.geometry?.length)
+  .map((m) => m.geometry!.map(project));
 const buildings = (elements("osm-buildings.json") as OsmWay[])
   .filter((el) => el.type === "way" && el.geometry?.length > 2)
   .map((el) => {
@@ -78,7 +81,6 @@ const buildings = (elements("osm-buildings.json") as OsmWay[])
     return {
       id: el.id,
       footprint: el.geometry.map(project),
-      // OSM height, else levels * 3.2 m, else null (renderer uses a default and the source says so)
       heightM: Number.isFinite(height) && height > 0 ? height : Number.isFinite(levels) && levels > 0 ? round1(levels * 3.2) : null,
     };
   });
@@ -87,23 +89,30 @@ const map = {
   meta: {
     builtBy: "scripts/data/build-map.ts",
     origin: ORIGIN,
-    bounds: BOUNDS,
-    units: "metres; x east, z north, origin at bounds centre",
-    extentM: EXTENT_M,
+    city: { bounds: CITY, extentM: extentOf(CITY) },
+    region: { bounds: REGION, extentM: extentOf(REGION) },
+    // Terrain, water and roads cover the region. The renderer reads this extent.
+    extentM: extentOf(REGION),
+    units: "metres; x east, z north, origin at the city centre",
     sources: [
-      { name: "OpenStreetMap contributors (ODbL)", url: "https://www.openstreetmap.org/copyright", used: "city boundary relation 11051981, water, roads, buildings" },
-      { name: "USGS 3D Elevation Program (3DEP)", url: "https://www.usgs.gov/3d-elevation-program", used: "bare-earth DEM, 512x384 float32 over bounds" },
+      { name: "OpenStreetMap contributors (ODbL)", url: "https://www.openstreetmap.org/copyright", used: "city boundary, regional water and roads, city buildings" },
+      { name: "USGS 3D Elevation Program (3DEP)", url: "https://www.usgs.gov/3d-elevation-program", used: "bare-earth DEM over the region, 768x576 float32" },
     ],
     waterNames: [...new Set(waterNames)],
     elevation: { width: DEM.width, height: DEM.height, minM: elevationMin, maxM: elevationMax, order: "row-major, row 0 = north (maxZ)" },
-    counts: { waterRings: waterRings.length, roads: roads.length, buildings: buildings.length },
+    counts: { waterRings: waterRings.length, roads: roads.length, buildings: buildings.length, cityOutlineRings: cityOutline.length },
   },
   elevationM: elevation,
   water: waterRings,
   roads,
+  cityOutline,
   buildings,
 };
 
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, JSON.stringify(map));
+// The game fetches the map from public/data at runtime, so the same file goes there.
+const PUBLIC = resolve(ROOT, "public/data/lake-elsinore-map.json");
+mkdirSync(dirname(PUBLIC), { recursive: true });
+writeFileSync(PUBLIC, JSON.stringify(map));
 console.log("wrote", OUT, map.meta.counts, "elev", elevationMin, "-", elevationMax);

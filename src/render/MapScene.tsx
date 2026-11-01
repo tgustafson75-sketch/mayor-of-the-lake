@@ -1,6 +1,7 @@
 // Real-data city map in 3D. Geometry comes from map-geometry.ts; this file only
 // does lighting, materials, props and the camera. Nothing here touches sim state.
 import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
+import { useLand, parcelAt } from "../ui/landStore";
 import * as THREE from "three";
 import { OrbitControls, Sky, useTexture } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
@@ -17,6 +18,7 @@ import {
   GROUND_TILE_M,
   buildWater,
   lakeCentre,
+  sampleElevation,
   treePlacements,
 } from "./map-geometry";
 
@@ -182,15 +184,61 @@ function Trees({ placements }: { placements: TreePlacement[] }) {
   );
 }
 
+/** Selects the parcel under a click on the terrain. */
+function pickParcel(point: THREE.Vector3, map: MapData) {
+  const { land, select } = useLand.getState();
+  if (!land) return;
+  select(parcelAt(land, point.x, point.z, map.meta.extentM));
+}
+
+/** The city boundary, drawn as a gold line just above the ground. */
+function CityOutline({ map }: { map: MapData }) {
+  const lines = useMemo(() => {
+    const geo = new THREE.BufferGeometry();
+    const pts: number[] = [];
+    for (const ring of map.cityOutline) {
+      for (let i = 0; i < ring.length; i++) {
+        const [x0, z0] = ring[i];
+        const [x1, z1] = ring[(i + 1) % ring.length];
+        pts.push(x0, sampleElevation(map, x0, z0) + 3, z0, x1, sampleElevation(map, x1, z1) + 3, z1);
+      }
+    }
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    return geo;
+  }, [map]);
+  return (
+    <lineSegments geometry={lines}>
+      <lineBasicMaterial color="#F4C430" />
+    </lineSegments>
+  );
+}
+
+/** A translucent square over the selected parcel. */
+function ParcelHighlight({ map }: { map: MapData }) {
+  const land = useLand((s) => s.land);
+  const selected = useLand((s) => s.selected);
+  const p = land && selected !== null ? land.parcels[selected] : null;
+  if (!p) return null;
+  const y = sampleElevation(map, p.x, p.z) + 4;
+  return (
+    <mesh position={[p.x, y, p.z]} rotation={[-Math.PI / 2, 0, 0]}>
+      <planeGeometry args={[1000, 1000]} />
+      <meshBasicMaterial color="#F4C430" transparent opacity={0.25} depthWrite={false} />
+    </mesh>
+  );
+}
+
 function MapMeshes({ map }: { map: MapData }) {
   const { terrain, skirt, water, roads, buildings, trees } = useMemo(() => buildAssets(map), [map]);
   const tex = usePhotoTextures();
 
   return (
     <group scale={[1, VERTICAL_EXAGGERATION, 1]}>
-      <mesh geometry={terrain} receiveShadow>
+      <mesh geometry={terrain} receiveShadow onClick={(e) => pickParcel(e.point, map)}>
         <meshStandardMaterial vertexColors map={tex.ground} roughness={0.95} metalness={0} />
       </mesh>
+      <CityOutline map={map} />
+      <ParcelHighlight map={map} />
       <mesh geometry={skirt}>
         <meshStandardMaterial color="#4a4134" roughness={1} side={THREE.DoubleSide} />
       </mesh>
@@ -265,6 +313,8 @@ function CameraRig({ focus }: { focus: { x: number; y: number; z: number } }) {
 
 export default function MapScene({ mode }: { mode: MapMode }) {
   const map = useMapData();
+  const ensureLand = useLand((s) => s.ensure);
+  useEffect(() => ensureLand(map), [map, ensureLand]);
   const focus = useMemo(() => lakeCentre(map), [map]);
   const full = mode === "full";
   const cam = full
@@ -295,7 +345,7 @@ export default function MapScene({ mode }: { mode: MapMode }) {
         enableZoom={full}
         maxPolarAngle={Math.PI / 2.05}
         minDistance={800}
-        maxDistance={60000}
+        maxDistance={90000}
       />
     </Canvas>
   );

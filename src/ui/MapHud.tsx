@@ -6,6 +6,7 @@ import { hrefFor } from "./routes";
 import { POPULATION_2025 } from "../config/realworld";
 import { CameraSwitcher } from "./CameraSwitcher";
 import { CouncilTalk } from "./CouncilTalk";
+import { LandPanel } from "./LandPanel";
 import { TimeControls } from "./TimeControls";
 import { useMediaQuery } from "./useMediaQuery";
 
@@ -27,6 +28,9 @@ export function MapHud({ onMenu }: { onMenu?: () => void }) {
     <div className="pointer-events-none absolute inset-0 font-sans text-[#E8E6E1]">
       <TopBar compact={!wide} onMenu={onMenu} />
       {wide ? <DesktopLayout /> : <MobileLayout />}
+      <div className="pointer-events-none absolute right-3 top-28 sm:right-4 sm:top-32">
+        <LandPanel />
+      </div>
       <Attribution />
     </div>
   );

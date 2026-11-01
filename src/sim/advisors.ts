@@ -40,6 +40,30 @@ export interface BriefingInput {
   trust: number;
 }
 
+/** Each role frames the same decision from its own job. */
+const TRADEOFF: Record<Advisor, Record<"push" | "hold", string>> = {
+  chief_of_staff: {
+    push: "Momentum matters now. Spend the political capital while the numbers are on our side.",
+    hold: "Protect the calendar. A failed vote costs more than a delayed one.",
+  },
+  budget: {
+    push: "The cost is covered only if the margin holds. Any slip lands on the reserve.",
+    hold: "Waiting keeps the budget flexible while the revenue picture firms up.",
+  },
+  planning: {
+    push: "The site plan is ready. Delay adds cost to the design and to the lake schedule.",
+    hold: "The plan needs one more review before it can carry a vote.",
+  },
+  communications: {
+    push: "The story is good today. Opponents will frame any pause as doubt.",
+    hold: "Opponents have a head start. Waiting lets them write the first headline.",
+  },
+  strategist: {
+    push: "The map of votes favours us. Take the margin before the next election cycle.",
+    hold: "Our margin is thin. Build more support before forcing the issue.",
+  },
+};
+
 /** Each advisor reads the same sim numbers. Skill decides whether the read is right. */
 export function briefAll(input: BriefingInput, rng: Rng): Briefing[] {
   const share = voteShare(input.sentiment, input.campaignStrength);
@@ -53,10 +77,7 @@ export function briefAll(input: BriefingInput, rng: Rng): Briefing[] {
       advisor: a,
       numbers: `Estimated vote ${pct}%, campaign strength ${input.campaignStrength}, trust ${input.trust.toFixed(2)}, weakest group ${lowest} at ${Math.round(input.sentiment[lowest] * 100)}%`,
       recommendation,
-      tradeoff:
-        recommendation === "push"
-          ? "Pushing now uses campaign capital; the margin looks safe enough."
-          : "Holding protects the margin but gives opponents time to shape the story.",
+      tradeoff: TRADEOFF[a][recommendation],
       reliable,
     };
   });

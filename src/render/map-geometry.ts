@@ -11,11 +11,14 @@ export type Xz = [number, number];
 export interface MapData {
   meta: {
     extentM: { minX: number; maxX: number; minZ: number; maxZ: number };
+    city: { extentM: { minX: number; maxX: number; minZ: number; maxZ: number } };
     elevation: { width: number; height: number; minM: number; maxM: number };
   };
   elevationM: number[];
   water: Xz[][];
   roads: { id: number; class: string; name: string | null; points: Xz[] }[];
+  /** Outer rings of the city boundary, in map metres. */
+  cityOutline: Xz[][];
   buildings: { id: number; footprint: Xz[]; heightM: number | null }[];
 }
 
@@ -91,9 +94,14 @@ export function waterSurfaces(map: MapData): WaterSurface[] {
     });
 }
 
-/** Centre of the largest water body (Lake Elsinore). Used as the camera focus. */
+/** Centre of the largest water body near the city centre (Lake Elsinore). Used as the camera focus. */
 export function lakeCentre(map: MapData): { x: number; z: number; y: number } {
-  const biggest = waterSurfaces(map).reduce((a, b) => (b.area > a.area ? b : a));
+  const NEAR_M = 8000; // only water this close to the city centre counts as the city's lake
+  const near = waterSurfaces(map).filter((s) => {
+    const [cx, cz] = centroid(s.ring);
+    return Math.hypot(cx, cz) < NEAR_M;
+  });
+  const biggest = near.reduce((a, b) => (b.area > a.area ? b : a));
   const [x, z] = centroid(biggest.ring);
   return { x, z, y: biggest.y };
 }
