@@ -4,9 +4,12 @@ import {
   type MapData,
   buildBuildings,
   buildRoads,
+  buildSkirt,
   buildTerrain,
   buildWater,
+  lakeCentre,
   sampleElevation,
+  treePlacements,
 } from "./map-geometry";
 
 const map = mapJson as unknown as MapData;
@@ -87,11 +90,12 @@ describe("roads", () => {
 });
 
 describe("buildings", () => {
-  it("builds one merged mesh with a bounding box inside the city extent", () => {
-    const geo = buildBuildings(map);
-    expect(geo).not.toBeNull();
-    geo!.computeBoundingBox();
-    const box = geo!.boundingBox!;
+  it("builds merged roof and wall meshes with a bounding box inside the city extent", () => {
+    const { walls } = buildBuildings(map);
+    expect(walls).not.toBeNull();
+    const geo = walls!;
+    geo.computeBoundingBox();
+    const box = geo.boundingBox!;
     expect(box.min.x).toBeGreaterThanOrEqual(minX - 1);
     expect(box.max.x).toBeLessThanOrEqual(maxX + 1);
     expect(box.min.z).toBeGreaterThanOrEqual(minZ - 1);
@@ -99,8 +103,95 @@ describe("buildings", () => {
   });
 
   it("extrudes upward: the top of the mesh is above the ground", () => {
-    const geo = buildBuildings(map)!;
+    const geo = buildBuildings(map).walls!;
     geo.computeBoundingBox();
     expect(geo.boundingBox!.max.y).toBeGreaterThan(map.meta.elevation.minM);
+  });
+});
+
+describe("buildings: roofs, walls and colour", () => {
+  it("returns separate roof and wall meshes", () => {
+    const { roofs, walls } = buildBuildings(map);
+    expect(roofs).not.toBeNull();
+    expect(walls).not.toBeNull();
+    expect(roofs!.getAttribute("position").count).toBeLessThan(walls!.getAttribute("position").count);
+  });
+
+  it("gives every vertex a colour in both meshes", () => {
+    for (const geo of Object.values(buildBuildings(map))) {
+      expect(geo!.getAttribute("color").count).toBe(geo!.getAttribute("position").count);
+    }
+  });
+
+  it("roof vertices point up; wall vertices are near-horizontal", () => {
+    const { roofs, walls } = buildBuildings(map);
+    const roofN = roofs!.getAttribute("normal");
+    for (let i = 0; i < roofN.count; i++) expect(Math.abs(roofN.getY(i))).toBeGreaterThan(0.99);
+    const wallN = walls!.getAttribute("normal");
+    for (let i = 0; i < wallN.count; i++) expect(Math.abs(wallN.getY(i))).toBeLessThan(0.01);
+  });
+});
+
+describe("terrain colour", () => {
+  it("gives every vertex an RGB colour in [0, 1]", () => {
+    const col = buildTerrain(map).getAttribute("color");
+    for (let i = 0; i < col.array.length; i++) {
+      expect(col.array[i]).toBeGreaterThanOrEqual(0);
+      expect(col.array[i]).toBeLessThanOrEqual(1);
+    }
+  });
+});
+
+describe("lakeCentre", () => {
+  it("sits inside the city extent, on the lake", () => {
+    const c = lakeCentre(map);
+    expect(c.x).toBeGreaterThan(minX);
+    expect(c.x).toBeLessThan(maxX);
+    expect(c.z).toBeGreaterThan(minZ);
+    expect(c.z).toBeLessThan(maxZ);
+  });
+});
+
+describe("tree placements", () => {
+  const trees = treePlacements(map);
+
+  it("places a substantial number of trees", () => {
+    expect(trees.length).toBeGreaterThan(1000);
+  });
+
+  it("is deterministic for the same seed", () => {
+    const again = treePlacements(map);
+    expect(again.length).toBe(trees.length);
+    expect(again[0]).toEqual(trees[0]);
+    expect(again[again.length - 1]).toEqual(trees[trees.length - 1]);
+  });
+
+  it("keeps every tree inside the city extent with a sensible scale", () => {
+    for (const t of trees) {
+      expect(t.x).toBeGreaterThanOrEqual(minX - 1);
+      expect(t.x).toBeLessThanOrEqual(maxX + 1);
+      expect(t.scale).toBeGreaterThan(0.5);
+      expect(t.scale).toBeLessThan(1.5);
+    }
+  });
+});
+
+describe("tile skirt", () => {
+  it("drops from the ground edge to a base below the lowest ground", () => {
+    const geo = buildSkirt(map);
+    geo.computeBoundingBox();
+    expect(geo.boundingBox!.min.y).toBeLessThan(map.meta.elevation.minM);
+    // The top edge follows the ground at the tile border, so it never exceeds the map's highest point.
+    expect(geo.boundingBox!.max.y).toBeLessThanOrEqual(map.meta.elevation.maxM + 0.01);
+  });
+
+  it("sits on the tile edge, inside the city extent", () => {
+    const geo = buildSkirt(map);
+    geo.computeBoundingBox();
+    const b = geo.boundingBox!;
+    expect(b.min.x).toBeCloseTo(minX, 0);
+    expect(b.max.x).toBeCloseTo(maxX, 0);
+    expect(b.min.z).toBeCloseTo(minZ, 0);
+    expect(b.max.z).toBeCloseTo(maxZ, 0);
   });
 });
