@@ -34,3 +34,6 @@ Installed with `npx playwright install chromium`. No other browser is configured
 
 ## D-011 Addendum 1 accepted into the plan (2026-11)
 docs/ADDENDUM-1.md adds time controls, daily/weekly/monthly/yearly loops, camera presets, four game modes, a real-world research phase (5.5) with a STOP, and a commitments ledger. Addendum wins over the main prompt on conflicts. Phase 1 has not started: Phase 0 review is still pending.
+
+## D-012 Visual style: close realistic 3D (Tim, 2026-11-01)
+Tim chose "close realistic 3D" over the spec's stylized low-poly. Target: real-time Three.js with PBR materials, soft shadows, lighting and post-processing, using real OSM and 3DEP geometry, matching the mood and layout of the Lakefront mockups. Exact pixel match to AI renders is not a goal. This supersedes the "stylized low-poly tilt-shift" line in the main prompt. Open: Gridiron Life's style guide says "illustrated, not photoreal." Tim has not yet said whether "both" includes Gridiron Life.
