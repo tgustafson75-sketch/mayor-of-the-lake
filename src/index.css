@@ -1,1 +1,7 @@
 @import "tailwindcss";
+
+/* Brand type from the Gridiron style guide: condensed bold all-caps headers, clean sans body. */
+@theme {
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+}

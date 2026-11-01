@@ -6,6 +6,7 @@ import { writeDialogue } from "../packages/ai-conversations/src/dialogue";
 import { Rng } from "../src/sim/rng";
 import { whip } from "../src/sim/council";
 import { POLITICS_SCENARIO } from "../src/config/scenarios/politics";
+import type { Limiter } from "./rate-limit";
 
 export interface SessionStore {
   /** Trust toward Tim per council member. In-memory: resets when the server restarts. */
@@ -18,6 +19,8 @@ export interface SessionStore {
 export interface AppDeps {
   provider: AiProvider;
   store: SessionStore;
+  /** Optional: the public deployment passes one. Local development does not. */
+  limiter?: Limiter;
 }
 
 export function createSessionStore(seed = "lake-elsinore"): SessionStore {
@@ -37,6 +40,11 @@ export function createApp(deps: AppDeps) {
 
   /** One conversation turn: words -> intent -> sim outcome -> reply. The model never sets the outcome. */
   app.post("/api/talk", async (c) => {
+    if (deps.limiter) {
+      const ip = c.req.header("x-forwarded-for")?.split(",")[0].trim() ?? "local";
+      const refused = deps.limiter.check(ip);
+      if (refused) return c.json({ error: refused }, 429);
+    }
     const body = (await c.req.json().catch(() => null)) as { npcId?: string; text?: string } | null;
     if (!body?.npcId || !body.text) return c.json({ error: "npcId and text are required" }, 400);
     const name = NPC_NAMES[body.npcId];

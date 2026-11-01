@@ -27,8 +27,8 @@ export default function App() {
 
       <div className="relative flex min-h-screen flex-col justify-center gap-10 p-6 sm:p-16">
         <header className="pointer-events-none">
-          <h1 className="text-4xl font-black tracking-tight text-[#F4C430] sm:text-6xl">Mayor of the Lake</h1>
-          <p className="mt-2 text-stone-200">Lake Elsinore, California · working title</p>
+          <img src="/assets/brand/logo.png" alt="Mayor of the Lake" className="w-72 drop-shadow-xl sm:w-96" />
+          <p className="mt-3 font-display text-sm uppercase tracking-[0.3em] text-stone-200">Lake Elsinore, California</p>
         </header>
 
         <nav aria-label="Main menu" className="flex w-64 flex-col gap-3">
@@ -38,14 +38,14 @@ export default function App() {
               type="button"
               disabled
               title={`Arrives in Phase ${item.phase}`}
-              className="rounded-lg bg-stone-950/80 px-4 py-3 text-left font-semibold text-stone-500 backdrop-blur disabled:cursor-not-allowed"
+              className="rounded-md border border-white/10 bg-stone-950/80 px-4 py-3 text-left font-display text-lg uppercase tracking-wider text-stone-500 backdrop-blur disabled:cursor-not-allowed"
             >
               {item.label}
             </button>
           ))}
           <a
             href="#map"
-            className="rounded-lg border border-[#F4C430]/60 bg-stone-950/80 px-4 py-3 text-left font-semibold text-[#F4C430] backdrop-blur hover:bg-stone-900"
+            className="rounded-md border border-[#F4C430] bg-[#F4C430] px-4 py-3 text-left font-display text-lg uppercase tracking-wider text-stone-900 hover:bg-[#e0b020]"
           >
             Open the 3D city
           </a>
