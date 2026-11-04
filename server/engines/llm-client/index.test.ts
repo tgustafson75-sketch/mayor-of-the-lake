@@ -78,11 +78,7 @@ describe("callModel: timeouts and network errors", () => {
         (init.signal as AbortSignal).addEventListener("abort", () => reject(new DOMException("aborted", "TimeoutError")));
       })) as unknown as FetchLike;
     const r = await callModel({ ...base, provider: "anthropic", fetch: f, timeoutMs: 20, retries: 1 });
-    expect(r.ok).toBe(false);
-    if (!r.ok) {
-      expect(r.status).toBe(0);
-      expect(r.attempts).toBe(2);
-    }
+    expect(r).toMatchObject({ ok: false, status: 0, attempts: 2 });
   });
 
   it("treats a network error as status 0 and never throws", async () => {
