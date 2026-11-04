@@ -20,22 +20,22 @@ var bufferToFormData = (arrayBuffer, contentType) => {
 
 // node_modules/hono/dist/utils/body.js
 var MAX_NESTED_OBJECTS = 1e4;
-var isRawRequest = (request) => "headers" in request;
-var parseBody = async (request, options = /* @__PURE__ */ Object.create(null)) => {
+var isRawRequest = (request2) => "headers" in request2;
+var parseBody = async (request2, options = /* @__PURE__ */ Object.create(null)) => {
   const { all = false, dot = false } = options;
-  const mediaType = (isRawRequest(request) ? request.headers : request.raw.headers).get("Content-Type")?.split(";")[0].trim().toLowerCase();
-  if (mediaType === "multipart/form-data" || mediaType === "application/x-www-form-urlencoded") return parseFormData(request, {
+  const mediaType = (isRawRequest(request2) ? request2.headers : request2.raw.headers).get("Content-Type")?.split(";")[0].trim().toLowerCase();
+  if (mediaType === "multipart/form-data" || mediaType === "application/x-www-form-urlencoded") return parseFormData(request2, {
     all,
     dot
   });
   return {};
 };
-async function parseFormData(request, options) {
-  if (!isRawRequest(request) && request.bodyCache.formData) return convertFormDataToBodyData(await request.bodyCache.formData, options);
-  const headers = isRawRequest(request) ? request.headers : request.raw.headers;
-  const arrayBuffer = await request.arrayBuffer();
+async function parseFormData(request2, options) {
+  if (!isRawRequest(request2) && request2.bodyCache.formData) return convertFormDataToBodyData(await request2.bodyCache.formData, options);
+  const headers = isRawRequest(request2) ? request2.headers : request2.raw.headers;
+  const arrayBuffer = await request2.arrayBuffer();
   const formDataPromise = bufferToFormData(arrayBuffer, headers.get("Content-Type") || "");
-  if (!isRawRequest(request)) request.bodyCache.formData = formDataPromise;
+  if (!isRawRequest(request2)) request2.bodyCache.formData = formDataPromise;
   const formData = await formDataPromise;
   if (formData) return convertFormDataToBodyData(formData, options);
   return {};
@@ -155,8 +155,8 @@ var tryDecode = (str, decoder) => {
   }
 };
 var tryDecodeURI = (str) => tryDecode(str, decodeURI);
-var getPath = (request) => {
-  const url2 = request.url;
+var getPath = (request2) => {
+  const url2 = request2.url;
   const start = url2.indexOf("/", url2.indexOf(":") + 4);
   let i = start;
   for (; i < url2.length; i++) {
@@ -171,8 +171,8 @@ var getPath = (request) => {
   }
   return url2.slice(start, i);
 };
-var getPathNoStrict = (request) => {
-  const result = getPath(request);
+var getPathNoStrict = (request2) => {
+  const result = getPath(request2);
   return result.length > 1 && result.at(-1) === "/" ? result.slice(0, -1) : result;
 };
 var stripPathPrefix = (rawPath, decodedPath, prefixLength) => {
@@ -301,8 +301,8 @@ var HonoRequest = class {
   */
   path;
   bodyCache = {};
-  constructor(request, path = "/", matchResult = [[]]) {
-    this.raw = request;
+  constructor(request2, path = "/", matchResult = [[]]) {
+    this.raw = request2;
     this.path = path;
     this.#matchResult = matchResult;
   }
@@ -1230,7 +1230,7 @@ var Hono = class Hono2 {
       if (typeof options === "function") optionHandler = options;
       else {
         optionHandler = options.optionHandler;
-        if (options.replaceRequest === false) replaceRequest = (request) => request;
+        if (options.replaceRequest === false) replaceRequest = (request2) => request2;
         else replaceRequest = options.replaceRequest;
       }
     }
@@ -1270,11 +1270,11 @@ var Hono = class Hono2 {
     if (err instanceof Error) return this.errorHandler(err, c);
     throw err;
   }
-  #dispatch(request, executionCtx, env, method) {
-    if (method === "HEAD") return (async () => new Response(null, await this.#dispatch(request, executionCtx, env, "GET")))();
-    const path = this.getPath(request, { env });
+  #dispatch(request2, executionCtx, env, method) {
+    if (method === "HEAD") return (async () => new Response(null, await this.#dispatch(request2, executionCtx, env, "GET")))();
+    const path = this.getPath(request2, { env });
     const matchResult = this.router.match(method, path);
-    const c = new Context(request, {
+    const c = new Context(request2, {
       path,
       matchResult,
       env,
@@ -1314,8 +1314,8 @@ var Hono = class Hono2 {
   * @returns {Response | Promise<Response>} response of request
   *
   */
-  fetch = (request, ...rest) => {
-    return this.#dispatch(request, rest[1], rest[0], request.method);
+  fetch = (request2, ...rest) => {
+    return this.#dispatch(request2, rest[1], rest[0], request2.method);
   };
   /**
   * `.request()` is a useful method for testing.
@@ -3679,18 +3679,18 @@ var validateAsync = async (schema, value, _ctx) => {
   return result.issues.length === 0;
 };
 var _encode = (_Err) => {
-  const parse3 = _parse(_Err);
+  const parse4 = _parse(_Err);
   const fn = (schema, value, _ctx, _params) => {
     const ctx = _ctx ? { ..._ctx, direction: "backward" } : { direction: "backward" };
-    return parse3(schema, value, ctx, finalizeParams(fn, _params));
+    return parse4(schema, value, ctx, finalizeParams(fn, _params));
   };
   return fn;
 };
 var encode = /* @__PURE__ */ _encode($ZodRealError);
 var _decode = (_Err) => {
-  const parse3 = _parse(_Err);
+  const parse4 = _parse(_Err);
   const fn = (schema, value, _ctx, _params) => {
-    return parse3(schema, value, _ctx, finalizeParams(fn, _params));
+    return parse4(schema, value, _ctx, finalizeParams(fn, _params));
   };
   return fn;
 };
@@ -5185,7 +5185,7 @@ function capSize(inst, size) {
   if (!caps.length)
     return;
   const cap = Math.min(...caps.map((c) => c[0]));
-  const parse3 = inst._zod.parse;
+  const parse4 = inst._zod.parse;
   inst._zod.parse = (payload, ctx) => {
     const n = size(payload.value);
     if (n > cap && !ctx?.skipChecks && ctx?.direction !== "backward") {
@@ -5199,7 +5199,7 @@ function capSize(inst, size) {
         }
       }
     }
-    return parse3(payload, ctx);
+    return parse4(payload, ctx);
   };
 }
 var arraySize = (input2) => Array.isArray(input2) ? input2.length : -1;
@@ -21798,6 +21798,90 @@ function createApp(deps) {
   return app2;
 }
 
+// server/engines/llm-client/index.ts
+var runtime = globalThis;
+var ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
+var GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models";
+function request(o) {
+  if (o.provider === "anthropic") {
+    return {
+      url: ANTHROPIC_URL,
+      init: {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-api-key": o.apiKey, "anthropic-version": "2023-06-01" },
+        body: JSON.stringify({
+          model: o.model,
+          max_tokens: o.maxTokens,
+          ...o.temperature !== void 0 ? { temperature: o.temperature } : {},
+          ...o.system ? { system: o.system } : {},
+          messages: [{ role: "user", content: o.prompt }]
+        })
+      }
+    };
+  }
+  const parts = [
+    ...(o.images ?? []).map((img) => ({ inlineData: { mimeType: img.mimeType, data: img.data } })),
+    { text: o.prompt }
+  ];
+  return {
+    url: `${GEMINI_URL}/${o.model}:generateContent`,
+    init: {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-goog-api-key": o.apiKey },
+      body: JSON.stringify({
+        ...o.system ? { systemInstruction: { parts: [{ text: o.system }] } } : {},
+        contents: [{ role: "user", parts }],
+        ...o.tools ? { tools: o.tools } : {},
+        generationConfig: {
+          maxOutputTokens: o.maxTokens,
+          ...o.temperature !== void 0 ? { temperature: o.temperature } : {},
+          ...o.generationConfig ?? {}
+        }
+      })
+    }
+  };
+}
+function parse3(provider, data) {
+  const d = data;
+  if (provider === "anthropic") {
+    const content = d.content ?? [];
+    const u2 = d.usage ?? {};
+    return {
+      text: content.filter((c) => c.type === "text").map((c) => c.text ?? "").join(""),
+      usage: { inputTokens: u2.input_tokens ?? 0, outputTokens: u2.output_tokens ?? 0 }
+    };
+  }
+  const cands = d.candidates ?? [];
+  const u = d.usageMetadata ?? {};
+  return {
+    text: (cands[0]?.content?.parts ?? []).filter((p) => !p.thought).map((p) => p.text ?? "").join(""),
+    usage: { inputTokens: u.promptTokenCount ?? 0, outputTokens: u.candidatesTokenCount ?? 0 },
+    finishReason: cands[0]?.finishReason,
+    groundingMetadata: cands[0]?.groundingMetadata
+  };
+}
+var retryable = (status) => status === 0 || status === 429 || status >= 500;
+async function callModel(o) {
+  const doFetch = o.fetch ?? runtime.fetch;
+  const retries = o.retries ?? 1;
+  const { url: url2, init } = request(o);
+  let last = { status: 0, detail: "no attempt" };
+  for (let attempt = 1; attempt <= retries + 1; attempt++) {
+    try {
+      const res = await doFetch(url2, { ...init, signal: runtime.AbortSignal.timeout(o.timeoutMs) });
+      if (res.ok) {
+        return { ok: true, ...parse3(o.provider, await res.json()) };
+      }
+      last = { status: res.status, detail: (await res.text()).slice(0, 300) };
+    } catch (e) {
+      last = { status: 0, detail: e instanceof Error ? `${e.name}: ${e.message}` : String(e) };
+    }
+    if (!retryable(last.status) || attempt > retries) return { ok: false, status: last.status, detail: last.detail, attempts: attempt };
+    await new Promise((resolve) => runtime.setTimeout(() => resolve(), 500 * attempt));
+  }
+  return { ok: false, status: last.status, detail: last.detail, attempts: retries + 1 };
+}
+
 // server/ai/gemini-provider.ts
 var GEMINI_MODELS = {
   intent: "gemini-3.5-flash-lite",
@@ -21806,7 +21890,6 @@ var GEMINI_MODELS = {
   check: "gemini-3.5-flash-lite",
   classify: "gemini-3.5-flash-lite"
 };
-var ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models";
 function modelFor(task) {
   const kind = task.split(":")[0];
   const model = GEMINI_MODELS[kind];
@@ -21817,26 +21900,20 @@ function createGeminiProvider(apiKey) {
   if (!apiKey) throw new Error("GEMINI_API_KEY is empty");
   return {
     name: "gemini",
-    async complete(request) {
-      const res = await fetch(`${ENDPOINT}/${modelFor(request.task)}:generateContent`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": apiKey },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: request.system }] },
-          contents: [{ role: "user", parts: [{ text: request.user }] }],
-          generationConfig: { maxOutputTokens: 2048, temperature: 0.7 }
-        })
+    async complete(request2) {
+      const r = await callModel({
+        provider: "gemini",
+        model: modelFor(request2.task),
+        apiKey,
+        system: request2.system,
+        prompt: request2.user,
+        maxTokens: 2048,
+        temperature: 0.7,
+        timeoutMs: 25e3
       });
-      const body = await res.json();
-      if (!res.ok || body.error) {
-        throw new Error(`Gemini ${res.status} ${body.error?.status ?? ""} ${body.error?.message ?? ""}`.trim());
-      }
-      if (body.candidates?.[0]?.finishReason === "MAX_TOKENS") throw new Error(`Gemini reply was cut off at the token limit (${request.task})`);
-      const text = (body.candidates?.[0]?.content?.parts ?? []).map((p) => p.text ?? "").join("");
-      return {
-        text,
-        usage: { inputTokens: body.usageMetadata?.promptTokenCount ?? 0, outputTokens: body.usageMetadata?.candidatesTokenCount ?? 0 }
-      };
+      if (!r.ok) throw new Error(`Gemini ${r.status} ${r.detail}`.trim());
+      if (r.finishReason === "MAX_TOKENS") throw new Error(`Gemini reply was cut off at the token limit (${request2.task})`);
+      return { text: r.text, usage: r.usage };
     }
   };
 }
